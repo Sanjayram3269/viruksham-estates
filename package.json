@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test:foundation": "node --experimental-strip-types --test tests/supabase-env.test.mjs",
+    "test:foundation": "node --experimental-strip-types --test tests/supabase-env.test.mjs tests/schema-invariants.test.mjs",
     "check:supabase": "node --env-file=.env.local --experimental-strip-types scripts/check-supabase.mjs"
   },
   "dependencies": {
