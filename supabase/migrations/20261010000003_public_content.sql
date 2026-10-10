@@ -74,7 +74,8 @@ CREATE TABLE public.project_units (
   -- metadata for flexible future fields (floor, facing, corner plot, etc.)
   metadata    JSONB,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT uq_project_units_project_unit UNIQUE (project_id, id)
 );
 
 -- -----------------------------------------------------------------------------

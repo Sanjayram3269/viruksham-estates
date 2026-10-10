@@ -61,8 +61,14 @@ GRANT  EXECUTE ON FUNCTION public.is_admin() TO authenticated;
 
 -- -----------------------------------------------------------------------------
 -- prevent_role_self_elevation(): Trigger to block non-superadmin users from
--- modifying their own role or any other profile's role.
--- Only a superadmin can change roles.
+-- creating or modifying profile roles.
+--
+-- Security rules:
+--   1. BOOTSTRAP / SYSTEM PATH: Execution by database superuser (postgres,
+--      supabase_admin) or service_role key is permitted to initialize profiles.
+--   2. VALID ROLE VALUES: Role must be NOT NULL and IN ('admin', 'superadmin').
+--   3. MISSING CALLER IDENTITY: Non-system updates/inserts with missing auth.uid() are rejected.
+--   4. PRIVILEGE RESTRICTION: Only an existing superadmin profile can modify roles or assign superadmin role.
 -- -----------------------------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION public.prevent_role_self_elevation()
@@ -73,17 +79,66 @@ SET search_path = public, pg_temp
 SET row_security = off
 AS $$
 DECLARE
+  _caller_uid UUID;
   _caller_role TEXT;
+  _current_db_user TEXT;
+  _auth_role TEXT;
 BEGIN
-  -- Fetch the calling user's current role from profiles.
-  SELECT role INTO _caller_role
-  FROM public.profiles
-  WHERE id = auth.uid();
+  -- Fetch execution context details
+  _caller_uid := auth.uid();
+  _current_db_user := current_user;
+  _auth_role := COALESCE(
+    current_setting('request.jwt.claim.role', true),
+    auth.role()
+  );
 
-  -- If the role column is being changed and the caller is NOT a superadmin,
-  -- reject the operation.
-  IF OLD.role IS DISTINCT FROM NEW.role AND _caller_role <> 'superadmin' THEN
-    RAISE EXCEPTION 'Only superadmins may modify profile roles.';
+  -- 1. BOOTSTRAP / SYSTEM EXECUTION PATH:
+  -- Database owner (postgres), Supabase internal admin, or service_role API execution
+  -- are permitted to seed and provision initial superadmin profiles.
+  IF _current_db_user IN ('postgres', 'supabase_admin', 'service_role') OR _auth_role = 'service_role' THEN
+    RETURN NEW;
+  END IF;
+
+  -- 2. VALID ROLE VALUES: Enforce valid non-NULL role string
+  IF NEW.role IS NULL OR NEW.role NOT IN ('admin', 'superadmin') THEN
+    RAISE EXCEPTION 'Role assignment denied: invalid role value.';
+  END IF;
+
+  -- 3. ON INSERT: Only existing superadmins can create new profiles with superadmin role
+  IF TG_OP = 'INSERT' THEN
+    IF NEW.role = 'superadmin' THEN
+      IF _caller_uid IS NULL THEN
+        RAISE EXCEPTION 'Role assignment denied: missing caller identity.';
+      END IF;
+
+      SELECT role INTO _caller_role
+      FROM public.profiles
+      WHERE id = _caller_uid;
+
+      IF _caller_role IS NULL OR _caller_role <> 'superadmin' THEN
+        RAISE EXCEPTION 'Role assignment denied: only superadmins may create superadmin profiles.';
+      END IF;
+    END IF;
+    RETURN NEW;
+  END IF;
+
+  -- 4. ON UPDATE: Protect role column modifications
+  IF OLD.role IS DISTINCT FROM NEW.role THEN
+    IF _caller_uid IS NULL THEN
+      RAISE EXCEPTION 'Role modification denied: missing caller identity.';
+    END IF;
+
+    SELECT role INTO _caller_role
+    FROM public.profiles
+    WHERE id = _caller_uid;
+
+    IF _caller_role IS NULL THEN
+      RAISE EXCEPTION 'Role modification denied: caller profile does not exist.';
+    END IF;
+
+    IF _caller_role <> 'superadmin' THEN
+      RAISE EXCEPTION 'Role modification denied: only superadmins may modify profile roles.';
+    END IF;
   END IF;
 
   RETURN NEW;
@@ -91,6 +146,6 @@ END;
 $$;
 
 CREATE TRIGGER trg_prevent_role_self_elevation
-  BEFORE UPDATE ON public.profiles
+  BEFORE INSERT OR UPDATE ON public.profiles
   FOR EACH ROW
   EXECUTE FUNCTION public.prevent_role_self_elevation();

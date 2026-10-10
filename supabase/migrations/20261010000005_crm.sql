@@ -63,14 +63,20 @@ CREATE TABLE public.sales (
   id            UUID    PRIMARY KEY DEFAULT gen_random_uuid(),
   customer_id   UUID    NOT NULL REFERENCES public.customers(id)     ON DELETE RESTRICT,
   project_id    UUID    NOT NULL REFERENCES public.projects(id)      ON DELETE RESTRICT,
-  unit_id       UUID    REFERENCES public.project_units(id)          ON DELETE SET NULL,
+  unit_id       UUID,
   stage         public.sale_stage NOT NULL DEFAULT 'LEAD',
   agreed_price  NUMERIC,
   booking_date  TIMESTAMPTZ,
   assigned_to   UUID    REFERENCES public.profiles(id) ON DELETE SET NULL,
   notes         TEXT,
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
-  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+  updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+  -- Composite FK: guarantees unit_id belongs to the same project_id specified in sales
+  CONSTRAINT fk_sales_project_unit
+    FOREIGN KEY (project_id, unit_id)
+    REFERENCES public.project_units (project_id, id)
+    ON DELETE SET NULL
 );
 
 -- -----------------------------------------------------------------------------
