@@ -5,8 +5,8 @@ import { test } from "node:test";
 
 const MIGRATION_PATH = path.join(
   process.cwd(),
-  "supabase",
-  "migrations",
+  "docs",
+  "database",
   "20261010000000_schema_design_draft.sql"
 );
 

@@ -10,6 +10,44 @@
 -- fixed search_path — see migration 002 for the full security rationale.
 -- =============================================================================
 
+-- -----------------------------------------------------------------------------
+-- SECTION 0: Table-Level SQL Grants & Revokes
+-- Explicitly configure schema table permissions for PostgreSQL roles (anon, authenticated).
+-- SQL table grants control table-level operations; RLS policies filter rows.
+-- -----------------------------------------------------------------------------
+
+REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC, anon, authenticated;
+
+-- Public (anon) table privileges — read published content, submit consented enquiries
+GRANT SELECT ON public.projects              TO anon;
+GRANT SELECT ON public.project_media         TO anon;
+GRANT SELECT ON public.project_units         TO anon;
+GRANT SELECT ON public.construction_services TO anon;
+GRANT SELECT ON public.journal_posts         TO anon;
+GRANT SELECT ON public.company_timeline      TO anon;
+GRANT SELECT ON public.team_members          TO anon;
+GRANT SELECT ON public.testimonials          TO anon;
+GRANT INSERT ON public.enquiries             TO anon;
+
+-- Authenticated user table privileges (further restricted row-by-row via RLS policies)
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles              TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.projects              TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.project_media         TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.project_units         TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.construction_services TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.journal_posts         TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.company_timeline      TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.team_members          TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.testimonials          TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.enquiries             TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.customers             TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.site_visits           TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.sales                 TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.followups             TO authenticated;
+
+-- Immutable audit log: authenticated can SELECT and INSERT only (NO UPDATE, NO DELETE)
+GRANT SELECT, INSERT ON public.activity_logs TO authenticated;
+
 -- -------------------------
 -- Enable RLS on all tables
 -- -------------------------
