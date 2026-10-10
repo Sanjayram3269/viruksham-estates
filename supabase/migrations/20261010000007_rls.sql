@@ -151,12 +151,49 @@ CREATE POLICY "Anyone may submit an enquiry with consent"
 -- Admins can read and write all tables via is_admin().
 -- =============================================================================
 
-CREATE POLICY "Admins have full access to profiles"
+-- profiles: split policies for defence-in-depth (trigger + RLS both enforce role protection)
+
+-- Admins can read all profiles
+CREATE POLICY "Admins can select profiles"
   ON public.profiles
-  FOR ALL
+  FOR SELECT
+  TO authenticated
+  USING (public.is_admin());
+
+-- Admins can insert profiles (creation of new admin accounts via service-role provisioning)
+CREATE POLICY "Admins can insert profiles"
+  ON public.profiles
+  FOR INSERT
+  TO authenticated
+  WITH CHECK (public.is_admin());
+
+-- Admins can delete profiles
+CREATE POLICY "Admins can delete profiles"
+  ON public.profiles
+  FOR DELETE
+  TO authenticated
+  USING (public.is_admin());
+
+-- Profile UPDATE: superadmins only may modify any column; regular admins can update own
+-- non-role fields only. role column changes are additionally blocked by the trigger.
+-- This RLS layer provides the first line of defence visible to PostgREST.
+CREATE POLICY "Admins can update profiles (superadmin required for role changes)"
+  ON public.profiles
+  FOR UPDATE
   TO authenticated
   USING (public.is_admin())
-  WITH CHECK (public.is_admin());
+  WITH CHECK (
+    -- Regular admins can update only their own profile (non-role fields)
+    -- Superadmins can update any profile
+    EXISTS (
+      SELECT 1 FROM public.profiles AS caller
+      WHERE caller.id = auth.uid()
+        AND (
+          caller.role = 'superadmin'
+          OR (caller.id = profiles.id)
+        )
+    )
+  );
 
 CREATE POLICY "Admins have full access to projects"
   ON public.projects

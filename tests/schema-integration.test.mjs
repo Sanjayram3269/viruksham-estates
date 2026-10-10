@@ -513,65 +513,207 @@ describe('[RUNTIME DB] Local Supabase Database Integration & Security Tests', ()
     );
   });
 
-  test('CRM Confidentiality: Non-admin authenticated user cannot read customers table', async () => {
-    // Attempt select as anon/non-admin user
-    const { data, error } = await anonClient
+  test('CRM Confidentiality: Authenticated non-admin user CANNOT read customers table', async () => {
+    const nonAdminEmail = `nonadmin-${Date.now()}@example.com`;
+
+    // 1. Create a real authenticated user in Supabase Auth (WITHOUT an admin profile)
+    const { data: authUser, error: createErr } = await serviceClient.auth.admin.createUser({
+      email: nonAdminEmail,
+      password: 'Password123!',
+      email_confirm: true,
+    });
+    assert.equal(createErr, null, `Creating non-admin test user failed: ${createErr?.message}`);
+
+    // 2. Sign in as non-admin user to obtain a real authenticated JWT session
+    const { data: sessionData, error: loginErr } = await anonClient.auth.signInWithPassword({
+      email: nonAdminEmail,
+      password: 'Password123!',
+    });
+    assert.equal(loginErr, null, `Non-admin login failed: ${loginErr?.message}`);
+
+    // 3. Create authenticated client using non-admin JWT
+    const nonAdminClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      },
+    });
+
+    // 4. Attempt to query customers table as an authenticated non-admin user
+    const { data, error } = await nonAdminClient
       .from('customers')
       .select('*');
 
     assert.ok(
       error !== null || (data && data.length === 0),
-      'Non-admin user must not receive CRM customer records'
+      'Authenticated non-admin user must NOT be able to read CRM customers table'
     );
+
+    // Cleanup non-admin auth user
+    await serviceClient.auth.admin.deleteUser(authUser.user.id);
   });
 
-  test('Administrator access: Service / Admin role can read and write CRM entities', async () => {
+  test('Administrator access: Authenticated admin can read and write CRM entities', async () => {
+    const adminEmail = `admin-${Date.now()}@example.com`;
     const phone = `+9198${Math.floor(10000000 + Math.random() * 90000000)}`;
 
-    const { data, error } = await serviceClient
+    // 1. Create admin auth user
+    const { data: authUser, error: createErr } = await serviceClient.auth.admin.createUser({
+      email: adminEmail,
+      password: 'Password123!',
+      email_confirm: true,
+    });
+    assert.equal(createErr, null, `Creating admin test user failed: ${createErr?.message}`);
+
+    // 2. Provision admin profile in public.profiles table
+    const { error: profileErr } = await serviceClient
+      .from('profiles')
+      .insert({
+        id: authUser.user.id,
+        email: adminEmail,
+        full_name: 'Test Administrator',
+        role: 'admin',
+      });
+    assert.equal(profileErr, null, `Creating admin profile failed: ${profileErr?.message}`);
+
+    // 3. Sign in as admin user
+    const { data: sessionData, error: loginErr } = await anonClient.auth.signInWithPassword({
+      email: adminEmail,
+      password: 'Password123!',
+    });
+    assert.equal(loginErr, null, `Admin login failed: ${loginErr?.message}`);
+
+    const adminAuthClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      },
+    });
+
+    // 4. Execute customer insert as authenticated admin
+    const { data, error } = await adminAuthClient
       .from('customers')
-      .insert({ full_name: 'Admin Managed Customer', phone })
+      .insert({ full_name: 'Admin Inserted Customer', phone })
       .select('id, full_name');
 
-    assert.equal(error, null, `Admin service role should insert customer cleanly: ${error?.message}`);
+    assert.equal(error, null, `Authenticated admin should insert customer cleanly: ${error?.message}`);
     assert.ok(data && data.length > 0);
+
+    // Cleanup
+    await serviceClient.auth.admin.deleteUser(authUser.user.id);
   });
 
-  test('Role self-elevation trigger blocks unauthorized role modifications', async () => {
-    // Attempt to execute update with anon or missing caller identity
-    const { error } = await anonClient
+  test('Role self-elevation trigger blocks unauthorized role modifications by admin user', async () => {
+    const adminEmail = `admin-elevate-${Date.now()}@example.com`;
+
+    // 1. Create admin auth user & profile (role = 'admin')
+    const { data: authUser, error: createErr } = await serviceClient.auth.admin.createUser({
+      email: adminEmail,
+      password: 'Password123!',
+      email_confirm: true,
+    });
+    assert.equal(createErr, null, `Creating elevate test admin failed: ${createErr?.message}`);
+
+    const { error: profileErr } = await serviceClient.from('profiles').insert({
+      id: authUser.user.id,
+      email: adminEmail,
+      full_name: 'Regular Admin User',
+      role: 'admin',
+    });
+    assert.equal(profileErr, null, `Seeding elevate test admin profile failed: ${profileErr?.message}`);
+
+    // 2. Sign in as admin user
+    const { data: sessionData, error: loginErr } = await anonClient.auth.signInWithPassword({
+      email: adminEmail,
+      password: 'Password123!',
+    });
+    assert.equal(loginErr, null, `Admin login for elevate test failed: ${loginErr?.message}`);
+
+    const adminAuthClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      },
+    });
+
+    // 3. Admin user attempts to elevate their own profile role to 'superadmin'
+    const { error: elevateErr } = await adminAuthClient
       .from('profiles')
       .update({ role: 'superadmin' })
-      .neq('id', '00000000-0000-0000-0000-000000000000');
+      .eq('id', authUser.user.id)
+      .select('id, role');
 
-    assert.ok(error !== null, 'Role modification attempt without superadmin identity must be rejected');
+    // 4. Must be rejected by database trigger prevent_role_self_elevation()
+    assert.ok(elevateErr !== null, 'Role self-elevation attempt by non-superadmin must be rejected by trigger');
+    assert.ok(
+      elevateErr.message.includes('superadmin') || elevateErr.message.includes('denied'),
+      `Error must indicate trigger rejection: ${elevateErr?.message}`
+    );
+
+    // Cleanup
+    await serviceClient.auth.admin.deleteUser(authUser.user.id);
   });
 
-  test('Audit log immutability: UPDATE or DELETE on activity_logs fails', async () => {
-    // Seed audit log entry
-    const { data: logEntry, error: insertErr } = await serviceClient
+  test('Audit log immutability: UPDATE or DELETE on activity_logs fails for authenticated administrator', async () => {
+    const adminEmail = `admin-audit-${Date.now()}@example.com`;
+
+    // 1. Create admin auth user & profile
+    const { data: authUser } = await serviceClient.auth.admin.createUser({
+      email: adminEmail,
+      password: 'Password123!',
+      email_confirm: true,
+    });
+    await serviceClient.from('profiles').insert({
+      id: authUser.user.id,
+      email: adminEmail,
+      full_name: 'Audit Test Admin',
+      role: 'admin',
+    });
+
+    // 2. Sign in as admin
+    const { data: sessionData } = await anonClient.auth.signInWithPassword({
+      email: adminEmail,
+      password: 'Password123!',
+    });
+
+    const adminAuthClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      },
+    });
+
+    // 3. Admin inserts audit log entry (succeeds)
+    const { data: logEntry, error: insertErr } = await adminAuthClient
       .from('activity_logs')
-      .insert({ action: 'TEST_AUDIT', target_table: 'profiles' })
+      .insert({ action: 'ADMIN_AUDIT_LOG', target_table: 'profiles' })
       .select('id');
 
-    assert.equal(insertErr, null, `Seeding audit log failed: ${insertErr?.message}`);
+    assert.equal(insertErr, null, `Admin inserting audit log failed: ${insertErr?.message}`);
     const logId = logEntry[0].id;
 
-    // Attempt UPDATE via anon client
-    const { error: updateErr } = await anonClient
+    // 4. Authenticated admin attempts UPDATE on activity_logs -> MUST FAIL (no UPDATE policy)
+    const { error: updateErr } = await adminAuthClient
       .from('activity_logs')
-      .update({ action: 'MUTATED' })
+      .update({ action: 'MUTATED_BY_ADMIN' })
       .eq('id', logId);
 
-    assert.ok(updateErr !== null, 'UPDATE on activity_logs must be denied');
+    assert.ok(updateErr !== null, 'UPDATE on activity_logs must be denied even for an authenticated administrator');
 
-    // Attempt DELETE via anon client
-    const { error: deleteErr } = await anonClient
+    // 5. Authenticated admin attempts DELETE on activity_logs -> MUST FAIL (no DELETE policy)
+    const { error: deleteErr } = await adminAuthClient
       .from('activity_logs')
       .delete()
       .eq('id', logId);
 
-    assert.ok(deleteErr !== null, 'DELETE on activity_logs must be denied');
+    assert.ok(deleteErr !== null, 'DELETE on activity_logs must be denied even for an authenticated administrator');
+
+    // Cleanup
+    await serviceClient.auth.admin.deleteUser(authUser.user.id);
   });
 
   test('Duplicate normalized customer phone number fails (UNIQUE constraint)', async () => {
