@@ -18,6 +18,7 @@ const ROOT = join(__dirname, '..');
 // Import helper functions
 import { getSafeRedirectPath } from '../lib/auth/redirect.ts';
 import { parseSupabaseEnvironment } from '../lib/supabase/env.ts';
+import { executeAdminSignOut } from '../lib/auth/sign-out.ts';
 
 // ---------------------------------------------------------------------------
 // 1. Safe Redirect Path Validation (Open-Redirect Prevention)
@@ -96,6 +97,7 @@ describe('[AUTH SECURITY AUDIT] Secret & Client Bundle Isolation', () => {
     'lib/supabase/client.ts',
     'lib/supabase/env.ts',
     'lib/supabase/middleware.ts',
+    'lib/auth/sign-out.ts',
     'components/admin/admin-login-form.tsx',
     'components/admin/admin-sign-out.tsx',
     'app/admin/login/page.tsx',
@@ -128,3 +130,71 @@ describe('[AUTH SECURITY AUDIT] Secret & Client Bundle Isolation', () => {
     );
   });
 });
+
+// ---------------------------------------------------------------------------
+// 4. Administrator Sign-Out Handler & Failure Isolation
+// ---------------------------------------------------------------------------
+
+describe('[AUTH UNIT] Administrator Sign-Out Handler (executeAdminSignOut)', () => {
+  test('Successful sign-out returns success = true and no error', async () => {
+    const result = await executeAdminSignOut(async () => ({ error: null }));
+
+    assert.equal(result.success, true);
+    assert.equal(result.error, null);
+  });
+
+  test('Failed sign-out with API error message returns actionable feedback and success = false', async () => {
+    const result = await executeAdminSignOut(async () => ({
+      error: { message: 'Server session revocation rejected' },
+    }));
+
+    assert.equal(result.success, false);
+    assert.ok(result.error !== null);
+    assert.ok(result.error.includes('Server session revocation rejected'));
+    assert.ok(result.error.includes('Refresh the page and try again'));
+  });
+
+  test('Failed sign-out with empty error object falls back to standard message', async () => {
+    const result = await executeAdminSignOut(async () => ({
+      error: {},
+    }));
+
+    assert.equal(result.success, false);
+    assert.ok(result.error !== null);
+    assert.ok(result.error.includes('Failed to terminate session on server'));
+    assert.ok(result.error.includes('Refresh the page'));
+  });
+
+  test('Thrown exception in sign-out is safely caught and returns user-facing error', async () => {
+    const result = await executeAdminSignOut(async () => {
+      throw new Error('Network connection severed');
+    });
+
+    assert.equal(result.success, false);
+    assert.ok(result.error !== null);
+    assert.ok(result.error.includes('Network connection severed'));
+    assert.ok(result.error.includes('Refresh the page'));
+  });
+
+  test('AdminSignOutButton component does not redirect on failure and renders error', () => {
+    const compPath = join(ROOT, 'components/admin/admin-sign-out.tsx');
+    assert.ok(existsSync(compPath), 'AdminSignOutButton component must exist');
+    const content = readFileSync(compPath, 'utf-8');
+
+    // router.push must only be executed if result.success is true (i.e. guarded by if (!result.success) return)
+    assert.ok(
+      content.includes('if (!result.success)'),
+      'Sign-out button must guard redirect with success check'
+    );
+    assert.ok(
+      !content.match(/finally\s*\{[^}]*router\.push/),
+      'router.push must NOT be in a finally block'
+    );
+    // Component renders error state
+    assert.ok(
+      content.includes('signOutError &&'),
+      'Component must render signOutError when non-null'
+    );
+  });
+});
+

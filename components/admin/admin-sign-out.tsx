@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { executeAdminSignOut } from "@/lib/auth/sign-out";
 import { LogOut, Loader2, AlertCircle } from "lucide-react";
 
 export function AdminSignOutButton() {
@@ -16,27 +17,17 @@ export function AdminSignOutButton() {
 
     try {
       const supabase = createClient();
-      const { error } = await supabase.auth.signOut();
+      const result = await executeAdminSignOut(() => supabase.auth.signOut());
 
-      if (error) {
-        // Sign-out failed server-side: stay on the page so the error is visible.
-        // Do NOT redirect — the user must see the actionable error message.
-        setSignOutError(
-          `${error.message || "Failed to terminate session on server"}. ` +
-            "Refresh the page and try again, or close this browser tab."
-        );
+      if (!result.success) {
+        // Sign-out failed: stay on the page and display actionable error message.
+        setSignOutError(result.error);
         return;
       }
 
       // Success: session cleared — navigate to login and revalidate server state.
       router.push("/admin/login");
       router.refresh();
-    } catch (err) {
-      // Unexpected client-side failure: stay on the page with actionable feedback.
-      setSignOutError(
-        `${err instanceof Error ? err.message : "Unexpected sign-out failure"}. ` +
-          "Refresh the page and try again."
-      );
     } finally {
       setIsSigningOut(false);
     }

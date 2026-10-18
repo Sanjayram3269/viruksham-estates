@@ -427,8 +427,37 @@ if (!ANON_KEY || !SERVICE_KEY) {
   );
 }
 
-const anonClient = createClient(SUPABASE_URL, ANON_KEY ?? '');
-const serviceClient = createClient(SUPABASE_URL, SERVICE_KEY ?? '');
+let actualAnonClient = null;
+const anonClient = new Proxy({}, {
+  get(_target, prop) {
+    assert.ok(
+      ANON_KEY,
+      'TEST_SUPABASE_ANON_KEY must be set in environment to run runtime database tests. ' +
+      'Run `npx supabase start` and configure TEST_SUPABASE_ANON_KEY.'
+    );
+    if (!actualAnonClient) {
+      actualAnonClient = createClient(SUPABASE_URL, ANON_KEY);
+    }
+    const val = actualAnonClient[prop];
+    return typeof val === 'function' ? val.bind(actualAnonClient) : val;
+  }
+});
+
+let actualServiceClient = null;
+const serviceClient = new Proxy({}, {
+  get(_target, prop) {
+    assert.ok(
+      SERVICE_KEY,
+      'TEST_SUPABASE_SERVICE_KEY must be set in environment to run runtime database tests. ' +
+      'Run `npx supabase start` and configure TEST_SUPABASE_SERVICE_KEY.'
+    );
+    if (!actualServiceClient) {
+      actualServiceClient = createClient(SUPABASE_URL, SERVICE_KEY);
+    }
+    const val = actualServiceClient[prop];
+    return typeof val === 'function' ? val.bind(actualServiceClient) : val;
+  }
+});
 
 
 
