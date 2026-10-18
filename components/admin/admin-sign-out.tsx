@@ -19,13 +19,25 @@ export function AdminSignOutButton() {
       const { error } = await supabase.auth.signOut();
 
       if (error) {
-        setSignOutError(error.message || "Failed to terminate session on server");
+        // Sign-out failed server-side: stay on the page so the error is visible.
+        // Do NOT redirect — the user must see the actionable error message.
+        setSignOutError(
+          `${error.message || "Failed to terminate session on server"}. ` +
+            "Refresh the page and try again, or close this browser tab."
+        );
+        return;
       }
-    } catch (err) {
-      setSignOutError(err instanceof Error ? err.message : "Unexpected sign-out failure");
-    } finally {
+
+      // Success: session cleared — navigate to login and revalidate server state.
       router.push("/admin/login");
       router.refresh();
+    } catch (err) {
+      // Unexpected client-side failure: stay on the page with actionable feedback.
+      setSignOutError(
+        `${err instanceof Error ? err.message : "Unexpected sign-out failure"}. ` +
+          "Refresh the page and try again."
+      );
+    } finally {
       setIsSigningOut(false);
     }
   }
@@ -47,11 +59,12 @@ export function AdminSignOutButton() {
       </button>
 
       {signOutError && (
-        <span className="flex items-center gap-1 text-[10px] text-amber-700 font-medium">
-          <AlertCircle className="h-3 w-3 text-amber-600" />
+        <span className="flex items-center gap-1 text-[10px] text-red-700 font-medium max-w-xs text-right leading-tight">
+          <AlertCircle className="h-3 w-3 shrink-0 text-red-600" />
           <span>{signOutError}</span>
         </span>
       )}
     </div>
   );
 }
+

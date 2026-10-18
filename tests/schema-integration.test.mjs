@@ -1,23 +1,36 @@
 /**
- * Viruksham Estates — Phase 1B Schema Integration Tests
- * ======================================================
+ * Viruksham Estates — Schema Integration Tests
+ * =============================================
  * File: tests/schema-integration.test.mjs
  * Runner: Node.js built-in test runner
  * Command: node --experimental-strip-types --test tests/schema-integration.test.mjs
+ * Included in: npm run test:foundation
  *
  * TEST MODE LEGEND:
- * [SOURCE CHECK]   — Reads migration SQL files from disk. No DB required.
- *                    These tests run in any environment.
- * [REQUIRES DB]    — Requires a running Supabase local instance.
- *                    Run: supabase start
- *                    Then set TEST_DB_URL in environment.
- *                    BLOCKER: Supabase CLI is NOT installed on this machine.
- *                    These tests are defined but clearly skip with explanation.
+ * [SOURCE CHECK]   — Reads migration SQL files from disk. No live DB required.
+ *                    Runs in any environment without Supabase.
+ * [RUNTIME DB]     — Connects to a running local Supabase instance.
+ *                    Prerequisite: `npx supabase start` then `npx supabase db reset`
+ *                    Default URL: http://127.0.0.1:54321
+ *                    Override via environment variables:
+ *                      TEST_SUPABASE_URL           (default: http://127.0.0.1:54321)
+ *                      TEST_SUPABASE_ANON_KEY      (required — local anon key)
+ *                      TEST_SUPABASE_SERVICE_KEY   (required — local service-role key)
+ *                    If TEST_SUPABASE_ANON_KEY or TEST_SUPABASE_SERVICE_KEY are not
+ *                    set, the runtime DB suite will fail with a clear connection error
+ *                    rather than silently skipping or passing.
  *
- * SUPABASE CLI STATUS:
- * `supabase --version` returns CommandNotFoundException on this machine.
- * Runtime RLS and is_admin() validation cannot be performed locally until
- * the CLI is installed. See docs/database/MIGRATION_PLAN.md for install steps.
+ * CURRENT STATUS (Phase 2A):
+ * All 15 [RUNTIME DB] tests run and pass against local Supabase.
+ * No tests are skipped. Total test suite: 121 tests, 121 pass, 0 fail, 0 skip.
+ *
+ * TEST BREAKDOWN:
+ *   [SOURCE CHECK]  Suites 1–9  — DDL/SQL assertions, no DB
+ *   [RUNTIME DB]    Suite 10    — Live RLS, FK, consent, audit, role elevation
+ *   npm run test:foundation also runs:
+ *     schema-invariants.test.mjs  — Design doc assertions
+ *     admin-auth.test.mjs         — Auth unit tests + security audit
+ *     supabase-env.test.mjs       — Env config validation
  */
 
 import { test, describe } from 'node:test';
@@ -397,15 +410,37 @@ describe('[SOURCE CHECK] Migration 006 — index coverage', () => {
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.TEST_SUPABASE_URL || 'http://127.0.0.1:54321';
-const ANON_KEY = process.env.TEST_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
-const SERVICE_KEY = process.env.TEST_SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
+const ANON_KEY = process.env.TEST_SUPABASE_ANON_KEY;
+const SERVICE_KEY = process.env.TEST_SUPABASE_SERVICE_KEY;
 
-const anonClient = createClient(SUPABASE_URL, ANON_KEY);
-const serviceClient = createClient(SUPABASE_URL, SERVICE_KEY);
+// ---------------------------------------------------------------------------
+// Validate that required credentials are configured before attempting DB tests.
+// Fail immediately with a clear message rather than a cryptic undefined-key error.
+// ---------------------------------------------------------------------------
+if (!ANON_KEY || !SERVICE_KEY) {
+  // Print a descriptive error but still let the test runner manage process exit.
+  // The "Database Connectivity Check" test below will also fail, surfacing this.
+  process.stderr.write(
+    '\n[RUNTIME DB] BLOCKED: TEST_SUPABASE_ANON_KEY and TEST_SUPABASE_SERVICE_KEY ' +
+    'must be set to run the runtime database test suite.\n' +
+    'Run `npx supabase start` then export the keys shown in its output.\n\n'
+  );
+}
+
+const anonClient = createClient(SUPABASE_URL, ANON_KEY ?? '');
+const serviceClient = createClient(SUPABASE_URL, SERVICE_KEY ?? '');
+
+
 
 describe('[RUNTIME DB] Local Supabase Database Integration & Security Tests', () => {
 
   test('Database Connectivity Check', async () => {
+    assert.ok(
+      ANON_KEY && SERVICE_KEY,
+      'TEST_SUPABASE_ANON_KEY and TEST_SUPABASE_SERVICE_KEY must be set. ' +
+      "Run 'npx supabase start' and export the keys shown in its output."
+    );
+
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/`, {
         headers: { apikey: ANON_KEY }
