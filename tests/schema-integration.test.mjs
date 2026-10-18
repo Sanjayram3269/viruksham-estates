@@ -825,6 +825,116 @@ describe('[RUNTIME DB] Local Supabase Database Integration & Security Tests', ()
     assert.ok(mismatchErr !== null, 'Sale linking Project A with a Unit in Project B MUST fail composite FK constraint');
   });
 
+  test('Unit deletion nullifies unit_id on sales while preserving sale record and project_id', async () => {
+    const projSlug = `proj-del-${Date.now()}`;
+    const custPhone = `+9194${Math.floor(10000000 + Math.random() * 90000000)}`;
+
+    // Create Project
+    const { data: projs, error: projErr } = await serviceClient
+      .from('projects')
+      .insert([{ slug: projSlug, title: 'Project Del Unit', category: 'RESIDENTIAL', status: 'LIVE', location: 'City Del', description: 'Desc Del' }])
+      .select('id');
+    assert.equal(projErr, null, `Inserting test project failed: ${projErr?.message}`);
+    const projId = projs[0].id;
+
+    // Create Unit in Project
+    const { data: units, error: unitErr } = await serviceClient
+      .from('project_units')
+      .insert([{ project_id: projId, unit_number: 'DEL-101', status: 'RESERVED' }])
+      .select('id');
+    assert.equal(unitErr, null, `Inserting test unit failed: ${unitErr?.message}`);
+    const unitId = units[0].id;
+
+    // Create Customer
+    const { data: cust, error: custErr } = await serviceClient
+      .from('customers')
+      .insert([{ full_name: 'Unit Del Customer', phone: custPhone }])
+      .select('id');
+    assert.equal(custErr, null, `Inserting test customer failed: ${custErr?.message}`);
+
+    // Create Sale referencing Project and Unit
+    const { data: saleData, error: saleErr } = await serviceClient
+      .from('sales')
+      .insert([{ customer_id: cust[0].id, project_id: projId, unit_id: unitId }])
+      .select('id');
+    assert.equal(saleErr, null, `Inserting test sale failed: ${saleErr?.message}`);
+    const saleId = saleData[0].id;
+
+    // Delete the unit from project_units
+    const { error: delUnitErr } = await serviceClient
+      .from('project_units')
+      .delete()
+      .eq('id', unitId);
+
+    assert.equal(delUnitErr, null, `Deleting unit should succeed without violating project_id NOT NULL constraint: ${delUnitErr?.message}`);
+
+    // Verify sale record persists: project_id remains projId, unit_id is now NULL
+    const { data: fetchedSale, error: fetchErr } = await serviceClient
+      .from('sales')
+      .select('id, project_id, unit_id')
+      .eq('id', saleId)
+      .single();
+
+    assert.equal(fetchErr, null, `Fetching sale post-unit-deletion failed: ${fetchErr?.message}`);
+    assert.ok(fetchedSale !== null, 'Sale record must persist when unit is deleted');
+    assert.equal(fetchedSale.project_id, projId, 'Sale project_id must remain intact');
+    assert.equal(fetchedSale.unit_id, null, 'Sale unit_id must be set to NULL upon unit deletion');
+  });
+
+  test('Ordinary admin can update their own permitted profile fields (e.g. full_name) but role changes are denied', async () => {
+    const adminEmail = `admin-fields-${Date.now()}@example.com`;
+
+    // 1. Create admin auth user & profile (role = 'admin')
+    const { data: authUser } = await serviceClient.auth.admin.createUser({
+      email: adminEmail,
+      password: 'Password123!',
+      email_confirm: true,
+    });
+    await serviceClient.from('profiles').insert({
+      id: authUser.user.id,
+      email: adminEmail,
+      full_name: 'Original Admin Name',
+      role: 'admin',
+    });
+
+    // 2. Sign in as admin
+    const { data: sessionData } = await anonClient.auth.signInWithPassword({
+      email: adminEmail,
+      password: 'Password123!',
+    });
+
+    const adminAuthClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      },
+    });
+
+    // 3. Admin updates their own full_name -> MUST SUCCEED
+    const { data: updateData, error: updateErr } = await adminAuthClient
+      .from('profiles')
+      .update({ full_name: 'Updated Admin Name' })
+      .eq('id', authUser.user.id)
+      .select('full_name, role');
+
+    assert.equal(updateErr, null, `Admin updating own permitted fields failed: ${updateErr?.message}`);
+    assert.equal(updateData[0].full_name, 'Updated Admin Name', 'Profile full_name should be updated');
+    assert.equal(updateData[0].role, 'admin', 'Profile role should remain admin');
+
+    // 4. Admin attempts role escalation -> MUST BE REJECTED
+    const { error: elevateErr } = await adminAuthClient
+      .from('profiles')
+      .update({ role: 'superadmin' })
+      .eq('id', authUser.user.id)
+      .select('id, role');
+
+    assert.ok(elevateErr !== null, 'Role elevation attempt by non-superadmin must be rejected');
+
+    // Cleanup
+    await serviceClient.auth.admin.deleteUser(authUser.user.id);
+  });
+
   test('Migration sequence integrity check', async () => {
     // Verify tables exist and schema responds
     const { error } = await serviceClient
