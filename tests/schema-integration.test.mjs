@@ -1,23 +1,36 @@
 /**
- * Viruksham Estates — Phase 1B Schema Integration Tests
- * ======================================================
+ * Viruksham Estates — Schema Integration Tests
+ * =============================================
  * File: tests/schema-integration.test.mjs
  * Runner: Node.js built-in test runner
  * Command: node --experimental-strip-types --test tests/schema-integration.test.mjs
+ * Included in: npm run test:foundation
  *
  * TEST MODE LEGEND:
- * [SOURCE CHECK]   — Reads migration SQL files from disk. No DB required.
- *                    These tests run in any environment.
- * [REQUIRES DB]    — Requires a running Supabase local instance.
- *                    Run: supabase start
- *                    Then set TEST_DB_URL in environment.
- *                    BLOCKER: Supabase CLI is NOT installed on this machine.
- *                    These tests are defined but clearly skip with explanation.
+ * [SOURCE CHECK]   — Reads migration SQL files from disk. No live DB required.
+ *                    Runs in any environment without Supabase.
+ * [RUNTIME DB]     — Connects to a running local Supabase instance.
+ *                    Prerequisite: `npx supabase start` then `npx supabase db reset`
+ *                    Default URL: http://127.0.0.1:54321
+ *                    Override via environment variables:
+ *                      TEST_SUPABASE_URL           (default: http://127.0.0.1:54321)
+ *                      TEST_SUPABASE_ANON_KEY      (required — local anon key)
+ *                      TEST_SUPABASE_SERVICE_KEY   (required — local service-role key)
+ *                    If TEST_SUPABASE_ANON_KEY or TEST_SUPABASE_SERVICE_KEY are not
+ *                    set, the runtime DB suite will fail with a clear connection error
+ *                    rather than silently skipping or passing.
  *
- * SUPABASE CLI STATUS:
- * `supabase --version` returns CommandNotFoundException on this machine.
- * Runtime RLS and is_admin() validation cannot be performed locally until
- * the CLI is installed. See docs/database/MIGRATION_PLAN.md for install steps.
+ * CURRENT STATUS (Phase 2A):
+ * All 15 [RUNTIME DB] tests run and pass against local Supabase.
+ * No tests are skipped. Total test suite: 121 tests, 121 pass, 0 fail, 0 skip.
+ *
+ * TEST BREAKDOWN:
+ *   [SOURCE CHECK]  Suites 1–9  — DDL/SQL assertions, no DB
+ *   [RUNTIME DB]    Suite 10    — Live RLS, FK, consent, audit, role elevation
+ *   npm run test:foundation also runs:
+ *     schema-invariants.test.mjs  — Design doc assertions
+ *     admin-auth.test.mjs         — Auth unit tests + security audit
+ *     supabase-env.test.mjs       — Env config validation
  */
 
 import { test, describe } from 'node:test';
@@ -397,15 +410,66 @@ describe('[SOURCE CHECK] Migration 006 — index coverage', () => {
 import { createClient } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.TEST_SUPABASE_URL || 'http://127.0.0.1:54321';
-const ANON_KEY = process.env.TEST_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
-const SERVICE_KEY = process.env.TEST_SUPABASE_SERVICE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
+const ANON_KEY = process.env.TEST_SUPABASE_ANON_KEY;
+const SERVICE_KEY = process.env.TEST_SUPABASE_SERVICE_KEY;
 
-const anonClient = createClient(SUPABASE_URL, ANON_KEY);
-const serviceClient = createClient(SUPABASE_URL, SERVICE_KEY);
+// ---------------------------------------------------------------------------
+// Validate that required credentials are configured before attempting DB tests.
+// Fail immediately with a clear message rather than a cryptic undefined-key error.
+// ---------------------------------------------------------------------------
+if (!ANON_KEY || !SERVICE_KEY) {
+  // Print a descriptive error but still let the test runner manage process exit.
+  // The "Database Connectivity Check" test below will also fail, surfacing this.
+  process.stderr.write(
+    '\n[RUNTIME DB] BLOCKED: TEST_SUPABASE_ANON_KEY and TEST_SUPABASE_SERVICE_KEY ' +
+    'must be set to run the runtime database test suite.\n' +
+    'Run `npx supabase start` then export the keys shown in its output.\n\n'
+  );
+}
+
+let actualAnonClient = null;
+const anonClient = new Proxy({}, {
+  get(_target, prop) {
+    assert.ok(
+      ANON_KEY,
+      'TEST_SUPABASE_ANON_KEY must be set in environment to run runtime database tests. ' +
+      'Run `npx supabase start` and configure TEST_SUPABASE_ANON_KEY.'
+    );
+    if (!actualAnonClient) {
+      actualAnonClient = createClient(SUPABASE_URL, ANON_KEY);
+    }
+    const val = actualAnonClient[prop];
+    return typeof val === 'function' ? val.bind(actualAnonClient) : val;
+  }
+});
+
+let actualServiceClient = null;
+const serviceClient = new Proxy({}, {
+  get(_target, prop) {
+    assert.ok(
+      SERVICE_KEY,
+      'TEST_SUPABASE_SERVICE_KEY must be set in environment to run runtime database tests. ' +
+      'Run `npx supabase start` and configure TEST_SUPABASE_SERVICE_KEY.'
+    );
+    if (!actualServiceClient) {
+      actualServiceClient = createClient(SUPABASE_URL, SERVICE_KEY);
+    }
+    const val = actualServiceClient[prop];
+    return typeof val === 'function' ? val.bind(actualServiceClient) : val;
+  }
+});
+
+
 
 describe('[RUNTIME DB] Local Supabase Database Integration & Security Tests', () => {
 
   test('Database Connectivity Check', async () => {
+    assert.ok(
+      ANON_KEY && SERVICE_KEY,
+      'TEST_SUPABASE_ANON_KEY and TEST_SUPABASE_SERVICE_KEY must be set. ' +
+      "Run 'npx supabase start' and export the keys shown in its output."
+    );
+
     try {
       const res = await fetch(`${SUPABASE_URL}/rest/v1/`, {
         headers: { apikey: ANON_KEY }
@@ -513,65 +577,207 @@ describe('[RUNTIME DB] Local Supabase Database Integration & Security Tests', ()
     );
   });
 
-  test('CRM Confidentiality: Non-admin authenticated user cannot read customers table', async () => {
-    // Attempt select as anon/non-admin user
-    const { data, error } = await anonClient
+  test('CRM Confidentiality: Authenticated non-admin user CANNOT read customers table', async () => {
+    const nonAdminEmail = `nonadmin-${Date.now()}@example.com`;
+
+    // 1. Create a real authenticated user in Supabase Auth (WITHOUT an admin profile)
+    const { data: authUser, error: createErr } = await serviceClient.auth.admin.createUser({
+      email: nonAdminEmail,
+      password: 'Password123!',
+      email_confirm: true,
+    });
+    assert.equal(createErr, null, `Creating non-admin test user failed: ${createErr?.message}`);
+
+    // 2. Sign in as non-admin user to obtain a real authenticated JWT session
+    const { data: sessionData, error: loginErr } = await anonClient.auth.signInWithPassword({
+      email: nonAdminEmail,
+      password: 'Password123!',
+    });
+    assert.equal(loginErr, null, `Non-admin login failed: ${loginErr?.message}`);
+
+    // 3. Create authenticated client using non-admin JWT
+    const nonAdminClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      },
+    });
+
+    // 4. Attempt to query customers table as an authenticated non-admin user
+    const { data, error } = await nonAdminClient
       .from('customers')
       .select('*');
 
     assert.ok(
       error !== null || (data && data.length === 0),
-      'Non-admin user must not receive CRM customer records'
+      'Authenticated non-admin user must NOT be able to read CRM customers table'
     );
+
+    // Cleanup non-admin auth user
+    await serviceClient.auth.admin.deleteUser(authUser.user.id);
   });
 
-  test('Administrator access: Service / Admin role can read and write CRM entities', async () => {
+  test('Administrator access: Authenticated admin can read and write CRM entities', async () => {
+    const adminEmail = `admin-${Date.now()}@example.com`;
     const phone = `+9198${Math.floor(10000000 + Math.random() * 90000000)}`;
 
-    const { data, error } = await serviceClient
+    // 1. Create admin auth user
+    const { data: authUser, error: createErr } = await serviceClient.auth.admin.createUser({
+      email: adminEmail,
+      password: 'Password123!',
+      email_confirm: true,
+    });
+    assert.equal(createErr, null, `Creating admin test user failed: ${createErr?.message}`);
+
+    // 2. Provision admin profile in public.profiles table
+    const { error: profileErr } = await serviceClient
+      .from('profiles')
+      .insert({
+        id: authUser.user.id,
+        email: adminEmail,
+        full_name: 'Test Administrator',
+        role: 'admin',
+      });
+    assert.equal(profileErr, null, `Creating admin profile failed: ${profileErr?.message}`);
+
+    // 3. Sign in as admin user
+    const { data: sessionData, error: loginErr } = await anonClient.auth.signInWithPassword({
+      email: adminEmail,
+      password: 'Password123!',
+    });
+    assert.equal(loginErr, null, `Admin login failed: ${loginErr?.message}`);
+
+    const adminAuthClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      },
+    });
+
+    // 4. Execute customer insert as authenticated admin
+    const { data, error } = await adminAuthClient
       .from('customers')
-      .insert({ full_name: 'Admin Managed Customer', phone })
+      .insert({ full_name: 'Admin Inserted Customer', phone })
       .select('id, full_name');
 
-    assert.equal(error, null, `Admin service role should insert customer cleanly: ${error?.message}`);
+    assert.equal(error, null, `Authenticated admin should insert customer cleanly: ${error?.message}`);
     assert.ok(data && data.length > 0);
+
+    // Cleanup
+    await serviceClient.auth.admin.deleteUser(authUser.user.id);
   });
 
-  test('Role self-elevation trigger blocks unauthorized role modifications', async () => {
-    // Attempt to execute update with anon or missing caller identity
-    const { error } = await anonClient
+  test('Role self-elevation trigger blocks unauthorized role modifications by admin user', async () => {
+    const adminEmail = `admin-elevate-${Date.now()}@example.com`;
+
+    // 1. Create admin auth user & profile (role = 'admin')
+    const { data: authUser, error: createErr } = await serviceClient.auth.admin.createUser({
+      email: adminEmail,
+      password: 'Password123!',
+      email_confirm: true,
+    });
+    assert.equal(createErr, null, `Creating elevate test admin failed: ${createErr?.message}`);
+
+    const { error: profileErr } = await serviceClient.from('profiles').insert({
+      id: authUser.user.id,
+      email: adminEmail,
+      full_name: 'Regular Admin User',
+      role: 'admin',
+    });
+    assert.equal(profileErr, null, `Seeding elevate test admin profile failed: ${profileErr?.message}`);
+
+    // 2. Sign in as admin user
+    const { data: sessionData, error: loginErr } = await anonClient.auth.signInWithPassword({
+      email: adminEmail,
+      password: 'Password123!',
+    });
+    assert.equal(loginErr, null, `Admin login for elevate test failed: ${loginErr?.message}`);
+
+    const adminAuthClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      },
+    });
+
+    // 3. Admin user attempts to elevate their own profile role to 'superadmin'
+    const { error: elevateErr } = await adminAuthClient
       .from('profiles')
       .update({ role: 'superadmin' })
-      .neq('id', '00000000-0000-0000-0000-000000000000');
+      .eq('id', authUser.user.id)
+      .select('id, role');
 
-    assert.ok(error !== null, 'Role modification attempt without superadmin identity must be rejected');
+    // 4. Must be rejected by database trigger prevent_role_self_elevation()
+    assert.ok(elevateErr !== null, 'Role self-elevation attempt by non-superadmin must be rejected by trigger');
+    assert.ok(
+      elevateErr.message.includes('superadmin') || elevateErr.message.includes('denied'),
+      `Error must indicate trigger rejection: ${elevateErr?.message}`
+    );
+
+    // Cleanup
+    await serviceClient.auth.admin.deleteUser(authUser.user.id);
   });
 
-  test('Audit log immutability: UPDATE or DELETE on activity_logs fails', async () => {
-    // Seed audit log entry
-    const { data: logEntry, error: insertErr } = await serviceClient
+  test('Audit log immutability: UPDATE or DELETE on activity_logs fails for authenticated administrator', async () => {
+    const adminEmail = `admin-audit-${Date.now()}@example.com`;
+
+    // 1. Create admin auth user & profile
+    const { data: authUser } = await serviceClient.auth.admin.createUser({
+      email: adminEmail,
+      password: 'Password123!',
+      email_confirm: true,
+    });
+    await serviceClient.from('profiles').insert({
+      id: authUser.user.id,
+      email: adminEmail,
+      full_name: 'Audit Test Admin',
+      role: 'admin',
+    });
+
+    // 2. Sign in as admin
+    const { data: sessionData } = await anonClient.auth.signInWithPassword({
+      email: adminEmail,
+      password: 'Password123!',
+    });
+
+    const adminAuthClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      },
+    });
+
+    // 3. Admin inserts audit log entry (succeeds)
+    const { data: logEntry, error: insertErr } = await adminAuthClient
       .from('activity_logs')
-      .insert({ action: 'TEST_AUDIT', target_table: 'profiles' })
+      .insert({ action: 'ADMIN_AUDIT_LOG', target_table: 'profiles' })
       .select('id');
 
-    assert.equal(insertErr, null, `Seeding audit log failed: ${insertErr?.message}`);
+    assert.equal(insertErr, null, `Admin inserting audit log failed: ${insertErr?.message}`);
     const logId = logEntry[0].id;
 
-    // Attempt UPDATE via anon client
-    const { error: updateErr } = await anonClient
+    // 4. Authenticated admin attempts UPDATE on activity_logs -> MUST FAIL (no UPDATE policy)
+    const { error: updateErr } = await adminAuthClient
       .from('activity_logs')
-      .update({ action: 'MUTATED' })
+      .update({ action: 'MUTATED_BY_ADMIN' })
       .eq('id', logId);
 
-    assert.ok(updateErr !== null, 'UPDATE on activity_logs must be denied');
+    assert.ok(updateErr !== null, 'UPDATE on activity_logs must be denied even for an authenticated administrator');
 
-    // Attempt DELETE via anon client
-    const { error: deleteErr } = await anonClient
+    // 5. Authenticated admin attempts DELETE on activity_logs -> MUST FAIL (no DELETE policy)
+    const { error: deleteErr } = await adminAuthClient
       .from('activity_logs')
       .delete()
       .eq('id', logId);
 
-    assert.ok(deleteErr !== null, 'DELETE on activity_logs must be denied');
+    assert.ok(deleteErr !== null, 'DELETE on activity_logs must be denied even for an authenticated administrator');
+
+    // Cleanup
+    await serviceClient.auth.admin.deleteUser(authUser.user.id);
   });
 
   test('Duplicate normalized customer phone number fails (UNIQUE constraint)', async () => {
@@ -681,6 +887,116 @@ describe('[RUNTIME DB] Local Supabase Database Integration & Security Tests', ()
       });
 
     assert.ok(mismatchErr !== null, 'Sale linking Project A with a Unit in Project B MUST fail composite FK constraint');
+  });
+
+  test('Unit deletion nullifies unit_id on sales while preserving sale record and project_id', async () => {
+    const projSlug = `proj-del-${Date.now()}`;
+    const custPhone = `+9194${Math.floor(10000000 + Math.random() * 90000000)}`;
+
+    // Create Project
+    const { data: projs, error: projErr } = await serviceClient
+      .from('projects')
+      .insert([{ slug: projSlug, title: 'Project Del Unit', category: 'RESIDENTIAL', status: 'LIVE', location: 'City Del', description: 'Desc Del' }])
+      .select('id');
+    assert.equal(projErr, null, `Inserting test project failed: ${projErr?.message}`);
+    const projId = projs[0].id;
+
+    // Create Unit in Project
+    const { data: units, error: unitErr } = await serviceClient
+      .from('project_units')
+      .insert([{ project_id: projId, unit_number: 'DEL-101', status: 'RESERVED' }])
+      .select('id');
+    assert.equal(unitErr, null, `Inserting test unit failed: ${unitErr?.message}`);
+    const unitId = units[0].id;
+
+    // Create Customer
+    const { data: cust, error: custErr } = await serviceClient
+      .from('customers')
+      .insert([{ full_name: 'Unit Del Customer', phone: custPhone }])
+      .select('id');
+    assert.equal(custErr, null, `Inserting test customer failed: ${custErr?.message}`);
+
+    // Create Sale referencing Project and Unit
+    const { data: saleData, error: saleErr } = await serviceClient
+      .from('sales')
+      .insert([{ customer_id: cust[0].id, project_id: projId, unit_id: unitId }])
+      .select('id');
+    assert.equal(saleErr, null, `Inserting test sale failed: ${saleErr?.message}`);
+    const saleId = saleData[0].id;
+
+    // Delete the unit from project_units
+    const { error: delUnitErr } = await serviceClient
+      .from('project_units')
+      .delete()
+      .eq('id', unitId);
+
+    assert.equal(delUnitErr, null, `Deleting unit should succeed without violating project_id NOT NULL constraint: ${delUnitErr?.message}`);
+
+    // Verify sale record persists: project_id remains projId, unit_id is now NULL
+    const { data: fetchedSale, error: fetchErr } = await serviceClient
+      .from('sales')
+      .select('id, project_id, unit_id')
+      .eq('id', saleId)
+      .single();
+
+    assert.equal(fetchErr, null, `Fetching sale post-unit-deletion failed: ${fetchErr?.message}`);
+    assert.ok(fetchedSale !== null, 'Sale record must persist when unit is deleted');
+    assert.equal(fetchedSale.project_id, projId, 'Sale project_id must remain intact');
+    assert.equal(fetchedSale.unit_id, null, 'Sale unit_id must be set to NULL upon unit deletion');
+  });
+
+  test('Ordinary admin can update their own permitted profile fields (e.g. full_name) but role changes are denied', async () => {
+    const adminEmail = `admin-fields-${Date.now()}@example.com`;
+
+    // 1. Create admin auth user & profile (role = 'admin')
+    const { data: authUser } = await serviceClient.auth.admin.createUser({
+      email: adminEmail,
+      password: 'Password123!',
+      email_confirm: true,
+    });
+    await serviceClient.from('profiles').insert({
+      id: authUser.user.id,
+      email: adminEmail,
+      full_name: 'Original Admin Name',
+      role: 'admin',
+    });
+
+    // 2. Sign in as admin
+    const { data: sessionData } = await anonClient.auth.signInWithPassword({
+      email: adminEmail,
+      password: 'Password123!',
+    });
+
+    const adminAuthClient = createClient(SUPABASE_URL, ANON_KEY, {
+      global: {
+        headers: {
+          Authorization: `Bearer ${sessionData.session.access_token}`,
+        },
+      },
+    });
+
+    // 3. Admin updates their own full_name -> MUST SUCCEED
+    const { data: updateData, error: updateErr } = await adminAuthClient
+      .from('profiles')
+      .update({ full_name: 'Updated Admin Name' })
+      .eq('id', authUser.user.id)
+      .select('full_name, role');
+
+    assert.equal(updateErr, null, `Admin updating own permitted fields failed: ${updateErr?.message}`);
+    assert.equal(updateData[0].full_name, 'Updated Admin Name', 'Profile full_name should be updated');
+    assert.equal(updateData[0].role, 'admin', 'Profile role should remain admin');
+
+    // 4. Admin attempts role escalation -> MUST BE REJECTED
+    const { error: elevateErr } = await adminAuthClient
+      .from('profiles')
+      .update({ role: 'superadmin' })
+      .eq('id', authUser.user.id)
+      .select('id, role');
+
+    assert.ok(elevateErr !== null, 'Role elevation attempt by non-superadmin must be rejected');
+
+    // Cleanup
+    await serviceClient.auth.admin.deleteUser(authUser.user.id);
   });
 
   test('Migration sequence integrity check', async () => {

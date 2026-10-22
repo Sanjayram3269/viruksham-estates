@@ -72,11 +72,13 @@ CREATE TABLE public.sales (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
 
-  -- Composite FK: guarantees unit_id belongs to the same project_id specified in sales
+  -- Composite FK: guarantees unit_id belongs to the same project_id specified in sales.
+  -- ON DELETE SET NULL (unit_id): PostgreSQL 15+ specific column list syntax, nullifying only
+  -- unit_id while preserving non-null project_id on sales.
   CONSTRAINT fk_sales_project_unit
     FOREIGN KEY (project_id, unit_id)
     REFERENCES public.project_units (project_id, id)
-    ON DELETE SET NULL
+    ON DELETE SET NULL (unit_id)
 );
 
 -- -----------------------------------------------------------------------------

@@ -93,9 +93,13 @@ BEGIN
   );
 
   -- 1. BOOTSTRAP / SYSTEM EXECUTION PATH:
-  -- Database owner (postgres), Supabase internal admin, or service_role API execution
-  -- are permitted to seed and provision initial superadmin profiles.
-  IF _current_db_user IN ('postgres', 'supabase_admin', 'service_role') OR _auth_role = 'service_role' THEN
+  -- Only direct database administration (postgres/supabase_admin with NO JWT claim context)
+  -- or explicit service_role key execution are permitted to seed initial superadmin profiles.
+  IF _auth_role = 'service_role' OR (
+    _current_db_user IN ('postgres', 'supabase_admin') AND
+    _caller_uid IS NULL AND
+    current_setting('request.jwt.claim.role', true) IS NULL
+  ) THEN
     RETURN NEW;
   END IF;
 
