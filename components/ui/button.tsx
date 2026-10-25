@@ -12,6 +12,8 @@ const variantStyles: Record<ButtonVariant, string> = {
     "border border-[#e7e2d9] bg-transparent text-[#1c1917] hover:border-[#645d57] hover:bg-[#f2ece4]/50 focus-visible:ring-2 focus-visible:ring-[#1c1917] focus-visible:ring-offset-2",
   ghost:
     "bg-transparent text-[#1c1917] hover:bg-[#f2ece4]/60 focus-visible:ring-2 focus-visible:ring-[#1c1917] focus-visible:ring-offset-2",
+  destructive:
+    "bg-red-600 text-white hover:bg-red-500 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2",
 };
 
 export const Button = React.forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(
