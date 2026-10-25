@@ -4,30 +4,32 @@ import { Section } from "@/components/ui/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { ProjectMedia } from "@/components/projects/project-media";
 import { EnquiryForm } from "@/components/forms/enquiry-form";
-import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/server";
 
 interface ProjectDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
+export default async function ProjectDetailPage({
+  params,
+}: ProjectDetailPageProps) {
   const { slug } = await params;
 
-  // Fetch all projects and find the matching published one
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/admin/projects`, {
-    credentials: "include",
-  });
+  // Fetch single published project by slug using Supabase server client
+  // RLS policy ensures only is_published=true projects are readable anonymously
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("slug", slug)
+    .eq("is_published", true)
+    .single();
 
-  if (!res.ok) {
+  if (error || !data) {
     notFound();
   }
 
-  const { projects } = await res.json();
-  const project = projects.find((p: any) => p.slug === slug && p.is_published);
-
-  if (!project) {
-    notFound();
-  }
+  const project = data;
 
   return (
     <div className="bg-[#faf8f5]">
@@ -70,29 +72,27 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
               )}
             </div>
 
-            <div className="lg:col-span-4">
-              <div
-                className="sticky top-8 rounded-sm border border-[#e7e2d9] bg-[#faf8f5] p-6 shadow-xs space-y-6"
-              >
-                <div>
-                  <h3 className="text-sm font-semibold uppercase tracking-wider text-[#2e523c]">
-                    Availability & Pricing
-                  </h3>
-                  <p className="mt-1 text-lg font-semibold text-[#1c1917]">
-                    {project.pricing || "Pricing upon request"}
-                  </p>
-                  <p className="text-xs text-[#645d57]">
-                    {project.availability ||
-                      "Contact sales office for current status"}
-                  </p>
-                </div>
+            <div
+              className="lg:col-span-4 sticky top-8 rounded-sm border border-[#e7e2d9] bg-[#faf8f5] p-6 shadow-xs space-y-6"
+            >
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-[#2e523c]">
+                  Availability & Pricing
+                </h3>
+                <p className="mt-1 text-lg font-semibold text-[#1c1917]">
+                  {project.pricing || "Pricing upon request"}
+                </p>
+                <p className="text-xs text-[#645d57]">
+                  {project.availability ||
+                    "Contact sales office for current status"}
+                </p>
+              </div>
 
-                <div className="border-t border-[#e7e2d9] pt-6">
-                  <h4 className="text-sm font-semibold text-[#1c1917] mb-4">
-                    Inquire About This Project
-                  </h4>
-                  <EnquiryForm defaultProjectSlug={project.slug} />
-                </div>
+              <div className="border-t border-[#e7e2d9] pt-6">
+                <h4 className="text-sm font-semibold text-[#1c1917] mb-4">
+                  Inquire About This Project
+                </h4>
+                <EnquiryForm defaultProjectSlug={project.slug} />
               </div>
             </div>
           </div>

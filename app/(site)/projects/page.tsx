@@ -1,104 +1,21 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { ProjectCategory, ProjectStatus } from "@/types/project";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { ProjectFilters } from "@/components/projects/project-filters";
 import { ProjectCard } from "@/components/projects/project-card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { cn } from "@/lib/utils";
+import { createClient } from "@/lib/supabase/server";
 
-interface Project {
-  id: string;
-  slug: string;
-  title: string;
-  subtitle?: string;
-  category: ProjectCategory;
-  status: ProjectStatus;
-  location: string;
-  description: string;
-  overview?: string;
-  highlights?: string[];
-  amenities?: string[];
-  pricing?: string;
-  availability?: string;
-  is_published: boolean;
-  display_order: number;
-  coordinates?: { lat: number; lng: number };
-}
 
-interface ProjectsPageState {
-  projects: Project[];
-  isLoading: boolean;
-  error: string | null;
-}
+export default async function ProjectsPage() {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("is_published", true)
+    .order("display_order", { ascending: true });
 
-export default function ProjectsPage() {
-  const [state, setState] = useState<ProjectsPageState>({
-    projects: [],
-    isLoading: true,
-    error: null,
-  });
-
-  useEffect(() => {
-    async function fetchProjects() {
-      setState((prev) => ({ ...prev, isLoading: true, error: null }));
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/admin/projects`,
-          {
-            credentials: "include",
-          }
-        );
-
-        if (!res.ok) throw new Error("Failed to fetch projects");
-
-        const { projects: fetchedProjects } = await res.json();
-        setState({
-          projects: fetchedProjects || [],
-          isLoading: false,
-          error: null,
-        });
-      } catch (err) {
-        setState({
-          projects: [],
-          isLoading: false,
-          error:
-            err instanceof Error ? err.message : "Failed to fetch projects",
-        });
-        console.error("Error fetching projects:", err);
-      }
-    }
-
-    fetchProjects();
-  }, []);
-
-  const { projects, isLoading, error } = state;
-
-  if (isLoading) {
-    return (
-      <Section className="bg-[#faf8f5]">
-        <Container className="py-12 text-center">
-          <svg
-            className="h-8 w-8 mx-auto text-stone-400 animate-spin mb-4"
-            viewBox="0 0 24 24"
-          >
-            <circle
-              cx="12"
-              cy="12"
-              r="10"
-              fill="none"
-              strokeWidth="3"
-              stroke="currentColor"
-            />
-          </svg>
-          <p>Loading projects...</p>
-        </Container>
-      </Section>
-    );
-  }
+  const projects = data || [];
 
   return (
     <Section className="bg-[#faf8f5]">
@@ -123,28 +40,13 @@ export default function ProjectsPage() {
                 clipRule="evenodd"
               />
             </svg>
-            <span>{error}</span>
+            <span>Something went wrong while loading the project catalogue. Please try again later.</span>
           </div>
         )}
 
-        {isLoading ? (
-          <div className="py-12 text-center">
-            <svg
-              className="h-8 w-8 mx-auto text-stone-400 animate-spin mb-4"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                cx="12"
-                cy="12"
-                r="10"
-                fill="none"
-                strokeWidth="3"
-                stroke="currentColor"
-              />
-            </svg>
-            <p>Loading projects...</p>
-          </div>
-        ) : projects.length === 0 ? (
+        <ProjectFilters />
+
+        {projects.length === 0 ? (
           <EmptyState
             title="No projects are currently published."
             description="Our project portfolio is being prepared. Please check back soon or get in touch for upcoming developments."
