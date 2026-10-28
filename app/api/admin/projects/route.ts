@@ -76,14 +76,13 @@ function pickBoolean(raw: unknown): boolean | undefined {
 function pickStringArray(raw: unknown): string[] | undefined {
   if (Array.isArray(raw)) return raw.filter((value): value is string => typeof value === "string").map((value) => value.trim()).filter(Boolean);
   if (typeof raw === "string") {
-    return raw.split(/[,\\n]/).map((value) => value.trim()).filter(Boolean);
+    return raw.split(/[,\n]/).map((value) => value.trim()).filter(Boolean);
   }
   return undefined;
 }
 
 function slugify(raw: string): string {
-  return raw.normalize("NFKD").toLowerCase().trim()
-    .replace(/[\\u0300-\\u036f]/g, "")
+  return raw.toLowerCase().trim()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
@@ -117,16 +116,12 @@ export async function POST(request: NextRequest) {
 
     const title = body.title;
     if (typeof title !== "string" || title.trim().length === 0) {
-      return NextResponse.json({ error: "title is required and must be a non-empty string." }, { status: 400 });
-    }
-    const slugCandidate = normalizeSlug(body.slug) ?? slugify(title);
-
-    if (typeof title !== "string" || title.trim().length === 0) {
       return NextResponse.json(
         { error: "title is required and must be a non-empty string." },
         { status: 400 }
       );
     }
+    const slugCandidate = normalizeSlug(body.slug) ?? (slugify(title) || `project-${Date.now()}`);
 
     if (!slugCandidate) {
       return NextResponse.json(
@@ -241,7 +236,7 @@ export async function DELETE(request: NextRequest) {
     const projectId = rawProjectId.trim();
     const supabase = await createClient();
 
-    const { data: salesData, error: salesError } = await supabase
+    const { count: salesCount, error: salesError } = await supabase
       .from("sales")
       .select("id", { count: "exact", head: true })
       .eq("project_id", projectId);
@@ -253,9 +248,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const salesCount = salesData?.length ?? 0;
-
-    if (salesCount > 0) {
+    if ((salesCount ?? 0) > 0) {
       return NextResponse.json(
         { error: "This project has associated sales and cannot be deleted while they exist." },
         { status: 409 }
