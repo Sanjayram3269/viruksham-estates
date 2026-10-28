@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowDownWideNarrow, ArrowUpRight, Check, Clock3, Inbox, LoaderCircle, Mail, MessageCircle, Phone, RefreshCw, Search, SlidersHorizontal, UserRound } from "lucide-react";
+import { ArrowDownWideNarrow, Check, Clock3, Inbox, LoaderCircle, Mail, Phone, RefreshCw, Search, SlidersHorizontal, UserRound } from "lucide-react";
 
 type Enquiry = {
   id: string;
