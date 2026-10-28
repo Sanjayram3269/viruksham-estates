@@ -28,20 +28,14 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="hidden items-center gap-4 lg:flex">
-          <a href="tel:+910000000000" className="text-xs font-semibold tracking-wide text-[#6d685f] transition hover:text-[#b94c3a]">
-            Speak to our team
-          </a>
+          <Link href="/about" className="text-xs font-semibold tracking-wide text-[#6d685f] transition hover:text-[#b94c3a]">
+            Our approach
+          </Link>
           <Link href="/contact" className="inline-flex items-center gap-2 rounded-full bg-[#183327] px-5 py-3 text-xs font-semibold text-[#fbf8f2] transition hover:-translate-y-0.5 hover:bg-[#284c3a]">
             Start an enquiry <ArrowUpRight size={14} />
           </Link>
         </div>
-        <button
-          type="button"
-          aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"}
-          aria-expanded={menuOpen}
-          onClick={() => setMenuOpen((open) => !open)}
-          className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#ded8cf] text-[#183327] transition hover:bg-white lg:hidden"
-        >
+        <button type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#ded8cf] text-[#183327] transition hover:bg-white lg:hidden">
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
