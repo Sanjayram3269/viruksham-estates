@@ -147,7 +147,7 @@ export default function AdminProjectEditPage() {
           <Container className="max-w-2xl mx-auto space-y-8">
             <SectionHeading
               eyebrow="PROJECT CATALOGUE"
-              title="Edit Project"
+              title="Edit development"
               description="Modify the project details"
             />
 
@@ -162,7 +162,7 @@ export default function AdminProjectEditPage() {
             </div>
 
             {/* Form fields */}
-            <form onSubmit={onSubmit} className="space-y-6">
+            <form onSubmit={onSubmit} className="space-y-6 border border-[#e3dcd1] bg-[#fffdf9] p-5 shadow-[0_20px_60px_rgba(24,51,39,.06)] sm:p-8">
               {/* Basic project info */}
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1.5">
