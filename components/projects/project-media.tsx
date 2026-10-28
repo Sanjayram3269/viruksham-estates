@@ -8,16 +8,13 @@ interface ProjectMediaProps {
   className?: string;
 }
 
-export function ProjectMedia({
-  type = "cover",
-  label,
-  className,
-}: ProjectMediaProps) {
-  const defaultLabel = label || `PROJECT ${type.toUpperCase()} / COMING SOON`;
+export function ProjectMedia({ type = "cover", label, className }: ProjectMediaProps) {
+  const defaultLabel = label || `PROJECT ${type.toUpperCase()} / PHOTO TO BE ADDED`;
+  const variant = type === "masterplan" ? "land" : type === "cover" ? "project" : "detail";
 
   return (
-    <div className={cn("relative overflow-hidden rounded-sm", className)}>
-      <MediaPlaceholder label={defaultLabel} className="min-h-[240px]" />
+    <div className={cn("relative h-full min-h-[240px] w-full overflow-hidden", className)}>
+      <MediaPlaceholder variant={variant} label={defaultLabel} className="h-full min-h-[240px]" />
     </div>
   );
 }
