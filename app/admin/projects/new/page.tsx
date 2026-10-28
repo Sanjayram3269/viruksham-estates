@@ -21,8 +21,9 @@ export default function AdminProjectCreatePage() {
     setLoading(true);
     setError(null);
     try {
+      const formElement = event.currentTarget;
       const formData = Object.fromEntries(
-        new FormData(event.currentTarget).entries()
+        new FormData(formElement).entries()
       ) as Record<string, unknown>;
       const createResponse = await fetch(
         `${window.location.origin}/api/admin/projects`,
@@ -33,10 +34,13 @@ export default function AdminProjectCreatePage() {
           },
           body: JSON.stringify({
             ...formData,
-            slug:
-              (formData.slug as string | undefined) ??
-              (formData.title as string | undefined) ??
-              `project-${Date.now()}`,
+            slug: typeof formData.slug === "string" && formData.slug.trim()
+              ? formData.slug
+              : String(formData.title ?? ""),
+            is_published: formData.is_published === "true",
+            display_order: Number(formData.display_order ?? 0),
+            highlights: String(formData.highlights ?? ""),
+            amenities: String(formData.amenities ?? ""),
           }),
           credentials: "include",
         }
@@ -66,9 +70,9 @@ export default function AdminProjectCreatePage() {
     <Section className="bg-[#faf8f5]">
       <Container className="mx-auto max-w-4xl space-y-8">
         <SectionHeading
-          eyebrow="PROJECT CATALOGUE"
-          title="Create New Project"
-          description="Add a new property development to the catalogue"
+          eyebrow="PORTFOLIO MANAGEMENT"
+          title="Create a development"
+          description="Start with verified project details. Save a draft while original photography and final content are being prepared."
         />
 
         <div className="mb-6">
