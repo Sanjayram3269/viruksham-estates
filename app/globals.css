@@ -63,7 +63,29 @@ a { color: inherit; text-decoration: none; }
 .reveal-line { overflow: hidden; }
 .reveal-line > span { display: inline-block; animation: rise-in 850ms cubic-bezier(.16,1,.3,1) both; }
 @keyframes rise-in { from { opacity: 0; transform: translateY(110%); } to { opacity: 1; transform: translateY(0); } }
-.motion-reduce-safe { transition: none; }
+
+/* Shared form field treatment: smooth, accessible and consistent across the contact form and admin CMS. */
+main input:not([type="checkbox"]):not([type="radio"]),
+main select,
+main textarea {
+  border-radius: 2px;
+  border-color: #d9d1c5;
+  background-color: #fffdf9;
+  color: #183327;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease;
+}
+main input:not([type="checkbox"]):not([type="radio"]):focus,
+main select:focus,
+main textarea:focus {
+  border-color: #68816f;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(49,88,67,.11);
+}
+main input::placeholder, main textarea::placeholder { color: #a39a8e; }
+main textarea { resize: vertical; }
+main label { color: #4e594f; }
+main input[type="checkbox"] { accent-color: #183327; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
