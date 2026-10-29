@@ -45,7 +45,7 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
           <Link href="/projects" className="inline-flex items-center gap-2 text-xs font-semibold text-white/65 transition hover:text-white"><ArrowLeft size={14} /> Back to the portfolio</Link>
           <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_.72fr] lg:items-end">
             <div>
-              <div className="mb-5 flex flex-wrap items-center gap-2"><Eyebrow className="text-[#d7f29b]">{project.category}</Eyebrow><span className="text-white/30">/</span><span className="rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[.13em] text-white/80">{project.catalogOnly ? "Contact us for current details" : statusLabels[project.status] ?? project.status.replaceAll("_", " ")}</span></div>
+              <div className="mb-5 flex flex-wrap items-center gap-2"><Eyebrow className="text-[#d7f29b]">{project.category}</Eyebrow><span className="text-white/30">/</span><span className="rounded-full border border-white/20 bg-white/5 px-3 py-1.5 text-[9px] font-semibold uppercase tracking-[.13em] text-white/80">{("catalogOnly" in project && project.catalogOnly) ? "Contact us for current details" : statusLabels[project.status] ?? project.status.replaceAll("_", " ")}</span></div>
               <h1 className="display-serif max-w-4xl text-4xl leading-[.98] text-[#f8f9f2] sm:text-5xl lg:text-7xl">{project.title}</h1>
               {project.subtitle && <p className="mt-4 text-base text-white/65 sm:text-lg">{project.subtitle}</p>}
               <p className="mt-5 flex items-center gap-2 text-sm text-white/65"><MapPin size={15} className="text-[#d7f29b]" />{project.location}</p>
