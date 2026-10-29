@@ -14,7 +14,7 @@ const ACTIVE_NAV = [
   { href: "/admin/dashboard", label: "Overview", iconName: "overview" },
   { href: "/admin/projects", label: "Projects", iconName: "projects" },
   { href: "/admin/enquiries", label: "Enquiries", iconName: "enquiries" },
-];
+] as const;
 const LATER_NAV = [
   { label: "Construction services", icon: Hammer },
   { label: "Customers", icon: Users },
