@@ -43,14 +43,14 @@ export async function FeaturedProjects() {
         ) : (
           <div className="grid gap-5 md:grid-cols-3">
             {[
-              { number: "01", title: "Homes with intention", text: "Residential spaces designed around the rhythms of everyday life.", icon: House, tone: "from-[#d8d7c7] to-[#b2c0ae]", label: "RESIDENTIAL COLLECTION" },
-              { number: "02", title: "Room to grow", text: "Land and plotted development concepts with a long view.", icon: Compass, tone: "from-[#d8cdb6] to-[#a9b49a]", label: "LAND & PLOTS" },
-              { number: "03", title: "Places that connect", text: "Spaces that bring people, work and neighbourhoods together.", icon: Leaf, tone: "from-[#d4d5ca] to-[#9ba99d]", label: "COMMERCIAL & COMMUNITY" },
+              { number: "01", title: "Homes with intention", text: "Residential spaces designed around the rhythms of everyday life.", icon: House, tone: "from-[#d8d7c7] to-[#b2c0ae]", label: "RESIDENTIAL COLLECTION", image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=900&q=80" },
+              { number: "02", title: "Room to grow", text: "Land and plotted development concepts with a long view.", icon: Compass, tone: "from-[#d8cdb6] to-[#a9b49a]", label: "LAND & PLOTS", image: "https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=900&q=80" },
+              { number: "03", title: "Places that connect", text: "Spaces that bring people, work and neighbourhoods together.", icon: Leaf, tone: "from-[#d4d5ca] to-[#9ba99d]", label: "COMMERCIAL & COMMUNITY", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=80" },
             ].map((item) => {
               const Icon = item.icon;
               return (
                 <article key={item.number} className="lift-card group overflow-hidden border border-[#d9d1c4] bg-[#f8f9f2]">
-                  <div className={`architecture-grid relative flex aspect-[5/4] items-end overflow-hidden bg-gradient-to-br ${item.tone} p-5 sm:p-6`}>
+                  <div className={`architecture-grid relative flex aspect-[5/4] items-end overflow-hidden bg-gradient-to-br ${item.tone} bg-cover bg-center p-5 sm:p-6`} style={{ backgroundImage: `linear-gradient(180deg, rgba(15,42,28,.08), rgba(15,42,28,.46)), url(${item.image})` }}>
                     <div className="absolute inset-0 opacity-50 transition-transform duration-700 group-hover:scale-105" aria-hidden="true">
                       <svg viewBox="0 0 460 330" preserveAspectRatio="xMidYMid slice" className="h-full w-full">
                         <path d="M50 330V90L190 32L330 75V330Z" fill="#f6f0e5" fillOpacity=".72" stroke="#174f35" strokeOpacity=".25" />
