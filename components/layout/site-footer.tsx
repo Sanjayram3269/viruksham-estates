@@ -46,7 +46,7 @@ export function SiteFooter() {
           <p>© {new Date().getFullYear()} Viruksham Estates. All rights reserved.</p>
           <div className="flex items-center gap-5">
             <Link href="/admin/login" className="inline-flex items-center gap-1.5 transition hover:text-white"><ShieldCheck size={13} /> Admin portal</Link>
-            <span>Designed with intention</span>
+            <Link href="/founder-journey" className="transition hover:text-[#d7f29b]">Founder’s journey</Link><span>Designed with intention</span>
           </div>
         </div>
       </div>
