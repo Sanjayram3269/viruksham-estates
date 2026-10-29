@@ -1,8 +1,7 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { MediaPlaceholder } from "@/components/ui/media-placeholder";
 import { HeroFadeIn } from "@/components/ui/hero-motion";
 
 export function Hero() {
