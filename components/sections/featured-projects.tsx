@@ -3,7 +3,7 @@ import { ArrowRight, ArrowUpRight, Compass, House, Leaf, Sparkles } from "lucide
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { ProjectCard } from "@/components/projects/project-card";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@/lib/supabase/server";\nimport { PROJECT_CATALOG } from "@/components/projects/catalog";
 
 export async function FeaturedProjects() {
   const supabase = await createClient();
@@ -14,7 +14,7 @@ export async function FeaturedProjects() {
     .order("display_order", { ascending: true })
     .limit(3);
 
-  const projects = data ?? [];
+  const projects = data?.length ? data : PROJECT_CATALOG.slice(0, 3);
 
   return (
     <Section className="relative overflow-hidden bg-[#f0ebe1]">
@@ -22,13 +22,13 @@ export async function FeaturedProjects() {
         <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
           <div className="max-w-2xl">
             <div className="mb-5 flex items-center gap-3">
-              <span className="h-px w-9 bg-[#b94c3a]" />
+              <span className="h-px w-9 bg-[#2b8a45]" />
               <span className="editorial-kicker text-[#777267]">A considered collection</span>
             </div>
-            <h2 className="display-serif text-4xl leading-[1.02] text-[#183327] sm:text-5xl lg:text-6xl">Places with a <span className="italic text-[#b94c3a]">point of view.</span></h2>
-            <p className="mt-5 max-w-xl text-sm leading-7 text-[#716b61] sm:text-base">Discover spaces shaped with care — from thoughtfully planned homes to places that bring people together.</p>
+            <h2 className="display-serif text-4xl leading-[1.02] text-[#174f35] sm:text-5xl lg:text-6xl">Places with a <span className="italic text-[#2b8a45]">point of view.</span></h2>
+            <p className="mt-5 max-w-xl text-sm leading-7 text-[#596b5d] sm:text-base">Discover spaces shaped with care — from thoughtfully planned homes to places that bring people together.</p>
           </div>
-          <Link href="/projects" className="group inline-flex w-fit items-center gap-3 border-b border-[#b94c3a]/70 pb-2 text-xs font-bold uppercase tracking-[.14em] text-[#183327]">
+          <Link href="/projects" className="group inline-flex w-fit items-center gap-3 border-b border-[#2b8a45]/70 pb-2 text-xs font-bold uppercase tracking-[.14em] text-[#174f35]">
             Explore all projects <ArrowRight size={15} className="transition group-hover:translate-x-1" />
           </Link>
         </div>
@@ -48,26 +48,26 @@ export async function FeaturedProjects() {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <article key={item.number} className="lift-card group overflow-hidden border border-[#d9d1c4] bg-[#fbf8f2]">
+                <article key={item.number} className="lift-card group overflow-hidden border border-[#d9d1c4] bg-[#f8f9f2]">
                   <div className={`architecture-grid relative flex aspect-[5/4] items-end overflow-hidden bg-gradient-to-br ${item.tone} p-5 sm:p-6`}>
                     <div className="absolute inset-0 opacity-50 transition-transform duration-700 group-hover:scale-105" aria-hidden="true">
                       <svg viewBox="0 0 460 330" preserveAspectRatio="xMidYMid slice" className="h-full w-full">
-                        <path d="M50 330V90L190 32L330 75V330Z" fill="#f6f0e5" fillOpacity=".72" stroke="#183327" strokeOpacity=".25" />
+                        <path d="M50 330V90L190 32L330 75V330Z" fill="#f6f0e5" fillOpacity=".72" stroke="#174f35" strokeOpacity=".25" />
                         <path d="M83 112L190 69L295 104V330H83Z" fill="#536e62" fillOpacity=".65" />
                         {Array.from({ length: 8 }).map((_, i) => <path key={i} d={`M${98 + (i%4)*49} 100V330M${80} ${145 + Math.floor(i/4)*90}H298`} stroke="#f8f3e9" strokeWidth="3" strokeOpacity=".72" />)}
-                        <path d="M0 300L130 260L255 287L460 230V330H0Z" fill="#183327" fillOpacity=".28" />
+                        <path d="M0 300L130 260L255 287L460 230V330H0Z" fill="#174f35" fillOpacity=".28" />
                       </svg>
                     </div>
-                    <span className="relative z-10 rounded-full border border-white/70 bg-[#fbf8f2]/80 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.17em] text-[#183327] backdrop-blur-md">{item.label}</span>
-                    <span className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/50 text-[#183327] backdrop-blur-sm transition duration-300 group-hover:-translate-y-1 group-hover:translate-x-1"><Icon size={18} /></span>
-                    <span className="absolute left-5 top-5 text-[10px] font-semibold tracking-[.2em] text-[#183327]/60">{item.number}</span>
+                    <span className="relative z-10 rounded-full border border-white/70 bg-[#f8f9f2]/80 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.17em] text-[#174f35] backdrop-blur-md">{item.label}</span>
+                    <span className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-white/50 text-[#174f35] backdrop-blur-sm transition duration-300 group-hover:-translate-y-1 group-hover:translate-x-1"><Icon size={18} /></span>
+                    <span className="absolute left-5 top-5 text-[10px] font-semibold tracking-[.2em] text-[#174f35]/60">{item.number}</span>
                   </div>
                   <div className="p-5 sm:p-6">
-                    <h3 className="display-serif text-2xl text-[#183327]">{item.title}</h3>
-                    <p className="mt-3 min-h-[48px] text-sm leading-6 text-[#716b61]">{item.text}</p>
-                    <div className="mt-6 flex items-center justify-between border-t border-[#e3dcd1] pt-4">
+                    <h3 className="display-serif text-2xl text-[#174f35]">{item.title}</h3>
+                    <p className="mt-3 min-h-[48px] text-sm leading-6 text-[#596b5d]">{item.text}</p>
+                    <div className="mt-6 flex items-center justify-between border-t border-[#dce7d5] pt-4">
                       <span className="text-[10px] uppercase tracking-[.15em] text-[#918879]">Portfolio preview</span>
-                      <Link href="/projects" aria-label={`Explore ${item.title}`} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d8d0c4] text-[#183327] transition hover:border-[#b94c3a] hover:bg-[#b94c3a] hover:text-white"><ArrowUpRight size={15} /></Link>
+                      <Link href="/projects" aria-label={`Explore ${item.title}`} className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d8d0c4] text-[#174f35] transition hover:border-[#2b8a45] hover:bg-[#2b8a45] hover:text-white"><ArrowUpRight size={15} /></Link>
                     </div>
                   </div>
                 </article>
@@ -75,9 +75,9 @@ export async function FeaturedProjects() {
             })}
           </div>
         )}
-        <div className="flex flex-col items-start gap-4 border-t border-[#d7cfc2] pt-6 text-xs text-[#716b61] sm:flex-row sm:items-center sm:justify-between">
-          <p className="flex items-center gap-2"><Sparkles size={14} className="text-[#b94c3a]" /> Original project photography will replace these portfolio previews as assets are supplied.</p>
-          <Link href="/contact" className="font-semibold text-[#183327] underline decoration-[#b94c3a]/60 underline-offset-4 transition hover:text-[#b94c3a]">Ask about upcoming projects</Link>
+        <div className="flex flex-col items-start gap-4 border-t border-[#d7cfc2] pt-6 text-xs text-[#596b5d] sm:flex-row sm:items-center sm:justify-between">
+          <p className="flex items-center gap-2"><Sparkles size={14} className="text-[#2b8a45]" /> Original project photography will replace these portfolio previews as assets are supplied.</p>
+          <Link href="/contact" className="font-semibold text-[#174f35] underline decoration-[#2b8a45]/60 underline-offset-4 transition hover:text-[#2b8a45]">Ask about upcoming projects</Link>
         </div>
       </Container>
     </Section>
