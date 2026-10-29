@@ -23,7 +23,7 @@ const statusLabels: Record<string, string> = {\n  CATALOG: "Contact us for curre
 export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
   const { slug } = await params;
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("projects")
     .select("*")
     .eq("slug", slug)
