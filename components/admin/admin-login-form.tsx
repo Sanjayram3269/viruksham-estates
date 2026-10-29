@@ -167,7 +167,7 @@ export function AdminLoginForm() {
           <div>
             <label
               htmlFor="password"
-              className="block text-xs font-medium text-stone-700 mb-1.5"
+              className="mb-2 block text-sm font-bold text-[#294636]"
             >
               Password
             </label>
@@ -184,7 +184,7 @@ export function AdminLoginForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Your password"
                 disabled={isLoading}
-                className="block w-full rounded-md border border-stone-300 pl-9 pr-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-emerald-800 focus:outline-none focus:ring-1 focus:ring-emerald-800 disabled:bg-stone-50 disabled:text-stone-500"
+                className="block w-full rounded-xl border border-[#cfe0c6] bg-[#fbfcf7] pl-10 pr-4 py-3.5 text-base font-medium text-[#173c29] placeholder-[#829184] focus:border-[#24763d] focus:outline-none focus:ring-4 focus:ring-[#24763d]/10 disabled:bg-stone-50 disabled:text-stone-500"
               />
             </div>
           </div>
