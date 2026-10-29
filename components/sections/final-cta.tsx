@@ -17,7 +17,7 @@ export function FinalCta() {
             Connect with the Viruksham Estates team to discuss upcoming projects, site visits, or tailored solutions.
           </p>
           <div className="pt-4 flex justify-center gap-4">
-            <Button href="/contact" variant="primary" className="px-8 py-4 text-base font-extrabold text-white">
+            <Button href="/contact" variant="primary" className="border border-[#d7f29b] bg-[#a8cf24] px-8 py-4 text-base font-extrabold text-[#103a28] hover:bg-[#d7f29b]">
               Get in Touch
             </Button>
           </div>
