@@ -64,7 +64,7 @@ export function Hero() {
             <div className="relative">
               <div className="absolute -right-3 -top-3 h-full w-full border border-[#2b8a45]/35 sm:-right-5 sm:-top-5" />
               <div className="relative aspect-[4/4.65] overflow-hidden shadow-[0_30px_90px_rgba(24,51,39,.17)] sm:aspect-[4/4.2]">
-                <MediaPlaceholder variant="hero" label="HERO ARCHITECTURE / PHOTO TO BE ADDED" className="h-full min-h-[420px]" />
+                <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1400&q=90" alt="Contemporary home opening onto a landscaped terrace" className="h-full min-h-[420px] w-full object-cover" fetchPriority="high" />
               </div>
               <div className="float-slow absolute -bottom-6 left-3 max-w-[270px] border border-[#e3dcd1] bg-[#f8f9f2] p-4 shadow-[0_18px_40px_rgba(24,51,39,.12)] sm:-left-8 sm:p-5">
                 <p className="editorial-kicker text-[#2b8a45]">The Viruksham outlook</p>
