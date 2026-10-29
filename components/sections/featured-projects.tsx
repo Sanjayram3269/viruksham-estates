@@ -3,7 +3,8 @@ import { ArrowRight, ArrowUpRight, Compass, House, Leaf, Sparkles } from "lucide
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { ProjectCard } from "@/components/projects/project-card";
-import { createClient } from "@/lib/supabase/server";\nimport { PROJECT_CATALOG } from "@/components/projects/catalog";
+import { createClient } from "@/lib/supabase/server";
+import { PROJECT_CATALOG } from "@/components/projects/catalog";
 
 export async function FeaturedProjects() {
   const supabase = await createClient();
