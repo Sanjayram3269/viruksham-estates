@@ -23,13 +23,12 @@ export default function AdminProjectsPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const loadProjects = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const response = await fetch("/api/admin/projects", { credentials: "include", cache: "no-store" });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : "Projects could not be loaded.");
       setProjects(Array.isArray(body.projects) ? body.projects : []);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Projects could not be loaded.");
     } finally {
@@ -103,7 +102,7 @@ export default function AdminProjectsPage() {
           <div className="px-6 py-14 text-center"><span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-[#f1ece2] text-[#183327]"><Building2 size={20} /></span><h3 className="display-serif mt-4 text-2xl text-[#183327]">{projects.length ? "No matching projects." : "Your portfolio starts here."}</h3><p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#81796d]">{projects.length ? "Try a different search or publication filter." : "Add your first real development. You can save it as a draft and add original photos later."}</p>{!projects.length && <Link href="/admin/projects/new" className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#183327] px-5 py-3 text-xs font-semibold text-white hover:bg-[#284c3a]">Create first project <ArrowUpRight size={14} /></Link>}</div>
         ) : (
           <div className="grid gap-5 p-4 sm:p-5 lg:grid-cols-2 2xl:grid-cols-3">
-            {filteredProjects.map((project, index) => {
+            {filteredProjects.map((project) => {
               const isPublished = Boolean((project as Project & { is_published?: boolean }).is_published);
               return (
                 <article key={project.id} className="lift-card overflow-hidden border border-[#e3dcd1] bg-[#fbf8f2]">
