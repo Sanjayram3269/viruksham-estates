@@ -46,7 +46,7 @@ function makeProject(
 
 export const PROJECT_CATALOG: CatalogProject[] = [
   ...landProjects.map(([slug, title, location]) => makeProject(slug, title, location, "PLOTS")),
-  ...constructionProjects.map(([slug, title, location, kind]) =>
+  ...constructionProjects.map(([slug, title, location]) =>
     makeProject(slug, title, location, "CONSTRUCTION"),
   ),
 ];
