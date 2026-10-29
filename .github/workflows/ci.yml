@@ -1,0 +1,91 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Lint, build, and Supabase integration tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Initialize local Supabase config when absent
+        run: |
+          if [ ! -f supabase/config.toml ]; then
+            supabase init
+          fi
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Reset local test database
+        run: supabase db reset
+
+      - name: Configure local test environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          STATUS="$(supabase status -o env)"
+          read_env_value() {
+            local key="$1"
+            printf '%s\n' "$STATUS" | sed -n "s/^${key}=\"\([^\"]*\)\"$/\1/p" | head -n 1
+          }
+
+          API_URL="$(read_env_value API_URL)"
+          ANON_KEY="$(read_env_value ANON_KEY)"
+          SERVICE_ROLE_KEY="$(read_env_value SERVICE_ROLE_KEY)"
+          PUBLISHABLE_KEY="$(read_env_value PUBLISHABLE_KEY)"
+
+          test -n "$API_URL"
+          test -n "$ANON_KEY"
+          test -n "$SERVICE_ROLE_KEY"
+          test -n "$PUBLISHABLE_KEY"
+
+          {
+            echo "TEST_SUPABASE_URL=$API_URL"
+            echo "TEST_SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "TEST_SUPABASE_SERVICE_KEY=$SERVICE_ROLE_KEY"
+            echo "NEXT_PUBLIC_SUPABASE_URL=$API_URL"
+            echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY"
+          } >> "$GITHUB_ENV"
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
+
+      - name: Run foundation and database security tests
+        run: npm run test:foundation
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup
