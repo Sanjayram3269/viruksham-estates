@@ -18,6 +18,13 @@ export function JournalGrid() {
       </section>
       <Section className="bg-[#f8f9f2]">
         <Container className="space-y-10">
+          <Link href="/founder-journey" className="group grid overflow-hidden rounded-2xl border border-[#dce7d5] bg-white shadow-[0_20px_60px_rgba(23,55,37,.08)] transition hover:-translate-y-1 hover:shadow-[0_28px_70px_rgba(23,55,37,.14)] md:grid-cols-[.9fr_1.1fr]">
+            <div className="relative min-h-[240px] overflow-hidden bg-[#d9e0d2]">
+              <img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85" alt="Modern residential architecture surrounded by greenery" className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105" loading="lazy" />
+              <span className="absolute left-5 top-5 rounded-full bg-[#d7f29b] px-4 py-2 text-xs font-extrabold uppercase tracking-wider text-[#173a29]">Founder’s story</span>
+            </div>
+            <div className="flex flex-col justify-center p-7 sm:p-10"><p className="editorial-kicker text-[#2b8a45]">1994 — 2022 / A visual timeline</p><h2 className="display-serif mt-3 text-3xl leading-tight text-[#174f35] sm:text-4xl">The founder’s roadmap: a journey through many chapters.</h2><p className="mt-4 text-base leading-7 text-[#596b5d]">Explore the professional milestones, businesses and themes shown in the roadmap shared with us — presented as a visual, long-form editorial story.</p><span className="mt-6 inline-flex items-center gap-2 text-sm font-extrabold text-[#174f35]">Read the full story <ArrowUpRight size={16} className="transition group-hover:translate-x-1 group-hover:-translate-y-1"/></span></div>
+          </Link>
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end"><div><p className="editorial-kicker text-[#2b8a45]">From our desk</p><h2 className="display-serif mt-3 text-4xl text-[#174f35] sm:text-5xl">Notes worth a pause.</h2></div><p className="max-w-sm text-sm leading-6 text-[#596b5d]">A developing editorial space for useful, grounded conversations about property and place.</p></div>
           {journalPosts.length === 0 ? (
             <div className="grid gap-5 lg:grid-cols-[1.1fr_.9fr]">
