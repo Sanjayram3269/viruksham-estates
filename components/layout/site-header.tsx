@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Menu, X, ShieldCheck } from "lucide-react";
+import { ArrowUpRight, Menu, X } from "lucide-react";
 import { BrandMark } from "@/components/brand/brand-mark";
 
 const links = [
@@ -28,9 +28,6 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="hidden items-center gap-3 lg:flex">
-          <Link href="/admin/login" className="inline-flex items-center gap-1.5 rounded-full border border-[#cfe0c6] px-3.5 py-2.5 text-sm font-bold text-[#174f35] transition hover:border-[#2b8a45] hover:bg-[#eef6e8]">
-            <ShieldCheck size={14} /> Admin
-          </Link>
           <Link href="/about" className="px-2 text-sm font-bold tracking-wide text-[#596b5d] transition hover:text-[#24763d]">
             Our approach
           </Link>
@@ -50,9 +47,6 @@ export function SiteHeader() {
                 {link.label}<ArrowUpRight size={15} />
               </Link>
             ))}
-            <Link href="/admin/login" onClick={() => setMenuOpen(false)} className="mt-5 inline-flex items-center justify-center gap-2 rounded-full border border-[#cfe0c6] px-5 py-3.5 text-sm font-semibold text-[#174f35]">
-              <ShieldCheck size={15} /> Admin portal <ArrowUpRight size={15} />
-            </Link>
             <Link href="/contact" onClick={() => setMenuOpen(false)} className="mt-3 inline-flex items-center justify-center gap-2 rounded-full bg-[#174f35] px-5 py-3.5 text-sm font-semibold text-white">
               Start an enquiry <ArrowUpRight size={15} />
             </Link>
