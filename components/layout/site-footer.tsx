@@ -24,13 +24,13 @@ export function SiteFooter() {
         <div className="grid gap-12 border-b border-white/15 pb-12 lg:grid-cols-[1.4fr_0.7fr_0.8fr] lg:gap-20">
           <div className="max-w-lg">
             <BrandMark inverse />
-            <p className="mt-6 max-w-sm text-sm leading-7 text-white/70">Thoughtfully considered spaces, grounded in place, made for the lives that unfold within them.</p>
+            <p className="mt-6 max-w-sm text-base font-medium leading-8 text-white/85">Thoughtfully considered spaces, grounded in place, made for the lives that unfold within them.</p>
             <Link href="/contact" className="mt-7 inline-flex items-center gap-2 border-b border-[#a8cf24] pb-2 text-sm font-medium text-white transition hover:text-[#d7f29b]">Begin a conversation <ArrowUpRight size={15} /></Link>
           </div>
           <div>
             <p className="eyebrow-footer">Explore</p>
             <nav className="mt-5 flex flex-col items-start gap-3.5">
-              {footerLinks.map((link) => <Link key={link.href} href={link.href} className="text-sm text-white/70 transition hover:translate-x-1 hover:text-white">{link.label}</Link>)}
+              {footerLinks.map((link) => <Link key={link.href} href={link.href} className="text-base font-medium text-white/80 transition hover:translate-x-1 hover:text-white">{link.label}</Link>)}
             </nav>
           </div>
           <div>
@@ -42,7 +42,7 @@ export function SiteFooter() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-4 pt-6 text-[11px] uppercase tracking-[0.16em] text-white/50 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-4 pt-6 text-xs uppercase tracking-[0.16em] text-white/50 sm:flex-row sm:items-center sm:justify-between">
           <p>© {new Date().getFullYear()} Viruksham Estates. All rights reserved.</p>
           <div className="flex items-center gap-5">
             <Link href="/admin/login" className="inline-flex items-center gap-1.5 transition hover:text-white"><ShieldCheck size={13} /> Admin portal</Link>
