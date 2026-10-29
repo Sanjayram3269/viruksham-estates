@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ArrowDownWideNarrow, Check, Clock3, Inbox, LoaderCircle, Mail, Phone, RefreshCw, Search, SlidersHorizontal, UserRound } from "lucide-react";
+import { Check, Clock3, Inbox, LoaderCircle, Mail, Phone, RefreshCw, Search, SlidersHorizontal, UserRound } from "lucide-react";
 
 type Enquiry = {
   id: string;
@@ -43,13 +43,12 @@ export default function AdminEnquiriesPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
 
   const loadEnquiries = useCallback(async () => {
-    setLoading(true);
-    setError(null);
     try {
       const response = await fetch("/api/admin/enquiries", { credentials: "include", cache: "no-store" });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : "Enquiries could not be loaded.");
       setEnquiries(Array.isArray(body.enquiries) ? body.enquiries : []);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Enquiries could not be loaded.");
     } finally {
@@ -94,7 +93,7 @@ export default function AdminEnquiriesPage() {
     <div className="mx-auto max-w-[1500px] space-y-8">
       <section className="relative overflow-hidden border border-[#d8d0c3] bg-[#183327] px-6 py-7 text-[#fbf8f2] sm:px-9 sm:py-9">
         <div className="pointer-events-none absolute -right-10 -top-28 h-80 w-80 rounded-full border border-white/10" />
-        <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end"><div><div className="mb-4 flex items-center gap-3"><span className="h-px w-8 bg-[#d97862]" /><span className="editorial-kicker text-white/60">Client relationships</span></div><h1 className="display-serif text-4xl leading-tight text-[#fbf8f2] sm:text-5xl">Every conversation matters.</h1><p className="mt-3 max-w-xl text-sm leading-6 text-white/65">Review incoming enquiries, understand what people are looking for and keep the next step visible.</p></div><button type="button" onClick={() => void loadEnquiries()} className="inline-flex items-center justify-center gap-2 self-start rounded-full border border-white/25 px-4 py-3 text-xs font-semibold text-white transition hover:bg-white/10"><RefreshCw size={14} /> Refresh inbox</button></div>
+        <div className="relative flex flex-col justify-between gap-6 sm:flex-row sm:items-end"><div><div className="mb-4 flex items-center gap-3"><span className="h-px w-8 bg-[#d97862]" /><span className="editorial-kicker text-white/60">Client relationships</span></div><h1 className="display-serif text-4xl leading-tight text-[#fbf8f2] sm:text-5xl">Every conversation matters.</h1><p className="mt-3 max-w-xl text-sm leading-6 text-white/65">Review incoming enquiries, understand what people are looking for and keep the next step visible.</p></div><button type="button" onClick={() => { setLoading(true); setError(null); void loadEnquiries(); }} className="inline-flex items-center justify-center gap-2 self-start rounded-full border border-white/25 px-4 py-3 text-xs font-semibold text-white transition hover:bg-white/10"><RefreshCw size={14} /> Refresh inbox</button></div>
       </section>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
