@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowUpRight, Compass, Landmark, BriefcaseBusiness, Scale, Users, Building2, MapPin, Sprout } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Compass, Landmark, BriefcaseBusiness, Scale, Users, Building2, Sprout } from "lucide-react";
 import { Container } from "@/components/ui/container";
 
 const milestones = [
@@ -19,7 +19,7 @@ export const metadata = {
 
 export default function FounderJourneyPage() {
   return (
-    <main className="overflow-hidden bg-[#f8f7f1] text-[#1b3025]">
+    <div className="overflow-hidden bg-[#f8f7f1] text-[#1b3025]">
       <section className="relative isolate overflow-hidden bg-[#14291f] text-[#f8f7f1]">
         <div className="absolute inset-0 opacity-25" style={{ backgroundImage: "url(https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=2000&q=85)", backgroundPosition: "center 52%", backgroundSize: "cover" }} />
         <div className="absolute inset-0 bg-gradient-to-r from-[#10271d] via-[#10271d]/90 to-[#10271d]/45" />
