@@ -14,7 +14,6 @@ interface ProjectDetailPageProps {
 }
 
 const statusLabels: Record<string, string> = {
-  CATALOG: "Contact us for current details",
   LIVE: "Now welcoming enquiries",
   ONGOING: "In progress",
   COMPLETED: "Completed development",
