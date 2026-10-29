@@ -2,7 +2,8 @@ import { ArrowRight, Building2, Compass, Layers3 } from "lucide-react";
 import Link from "next/link";
 import { Container } from "@/components/ui/container";
 import { PublishedProjectGrid } from "@/components/projects/published-project-grid";
-import { createClient } from "@/lib/supabase/server";\nimport { PROJECT_CATALOG } from "@/components/projects/catalog";
+import { createClient } from "@/lib/supabase/server";
+import { PROJECT_CATALOG } from "@/components/projects/catalog";
 
 export const metadata = {
   title: "Our Projects | Viruksham Estates",
@@ -11,13 +12,15 @@ export const metadata = {
 
 export default async function ProjectsPage() {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("projects")
     .select("*")
     .eq("is_published", true)
     .order("display_order", { ascending: true });
 
-  const databaseProjects = data ?? [];\n  const databaseSlugs = new Set(databaseProjects.map((project) => project.slug));\n  const projects = [...databaseProjects, ...PROJECT_CATALOG.filter((project) => !databaseSlugs.has(project.slug))];
+  const databaseProjects = data ?? [];
+  const databaseSlugs = new Set(databaseProjects.map((project) => project.slug));
+  const projects = [...databaseProjects, ...PROJECT_CATALOG.filter((project) => !databaseSlugs.has(project.slug))];
 
   return (
     <div className="min-h-screen bg-[#f8f9f2]">
