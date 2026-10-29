@@ -20,7 +20,7 @@ const values = [
 
 export function CompanyValues() {
   return (
-    <Section className="border-t border-[#e7e2d9] bg-[#f2ece4]/40">
+    <Section className="border-t border-[#dce7d5] bg-[#edf3e5]/40">
       <Container className="space-y-12">
         <SectionHeading
           eyebrow="CORE VALUES"
@@ -32,12 +32,12 @@ export function CompanyValues() {
           {values.map((v) => (
             <div
               key={v.title}
-              className="rounded-sm border border-[#e7e2d9] bg-[#faf8f5] p-8 space-y-3 shadow-xs"
+              className="rounded-sm border border-[#dce7d5] bg-[#f8f9f2] p-8 space-y-3 shadow-xs"
             >
               <h3 className="text-xl font-semibold tracking-tight text-[#1c1917]">
                 {v.title}
               </h3>
-              <p className="text-sm text-[#645d57] leading-relaxed">
+              <p className="text-sm text-[#596b5d] leading-relaxed">
                 {v.description}
               </p>
             </div>
