@@ -82,6 +82,6 @@ export default function FounderJourneyPage() {
         </Container>
       </section>
       <div className="bg-[#f8f7f1] py-6"><Container><p className="text-xs leading-6 text-[#687469]">Editorial note: professional roles and dates on this page reflect the image supplied for this website update. They have not been independently verified. Replace illustrative photographs with approved founder, team and project photography when available.</p></Container></div>
-    </main>
+    </div>
   );
 }
