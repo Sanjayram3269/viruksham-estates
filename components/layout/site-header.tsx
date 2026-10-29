@@ -28,10 +28,10 @@ export function SiteHeader() {
           ))}
         </nav>
         <div className="hidden items-center gap-3 lg:flex">
-          <Link href="/admin/login" className="inline-flex items-center gap-1.5 rounded-full border border-[#cfe0c6] px-3.5 py-2.5 text-xs font-semibold text-[#174f35] transition hover:border-[#2b8a45] hover:bg-[#eef6e8]">
+          <Link href="/admin/login" className="inline-flex items-center gap-1.5 rounded-full border border-[#cfe0c6] px-3.5 py-2.5 text-sm font-bold text-[#174f35] transition hover:border-[#2b8a45] hover:bg-[#eef6e8]">
             <ShieldCheck size={14} /> Admin
           </Link>
-          <Link href="/about" className="px-2 text-xs font-semibold tracking-wide text-[#596b5d] transition hover:text-[#24763d]">
+          <Link href="/about" className="px-2 text-sm font-bold tracking-wide text-[#596b5d] transition hover:text-[#24763d]">
             Our approach
           </Link>
           <Link href="/contact" className="inline-flex items-center gap-2 rounded-full bg-[#174f35] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#24763d]">
