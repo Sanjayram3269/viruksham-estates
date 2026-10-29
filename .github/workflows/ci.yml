@@ -60,14 +60,20 @@ jobs:
           }
 
           API_URL="$(read_env_value API_URL)"
+          # Current Supabase CLI exposes modern publishable/secret keys.
+          # Keep legacy aliases as fallbacks for CLI versions that still emit them.
+          PUBLISHABLE_KEY="$(read_env_value PUBLISHABLE_KEY)"
+          SECRET_KEY="$(read_env_value SECRET_KEY)"
           ANON_KEY="$(read_env_value ANON_KEY)"
           SERVICE_ROLE_KEY="$(read_env_value SERVICE_ROLE_KEY)"
-          PUBLISHABLE_KEY="$(read_env_value PUBLISHABLE_KEY)"
+          ANON_KEY="${ANON_KEY:-$PUBLISHABLE_KEY}"
+          SERVICE_ROLE_KEY="${SERVICE_ROLE_KEY:-$SECRET_KEY}"
 
           test -n "$API_URL"
           test -n "$ANON_KEY"
           test -n "$SERVICE_ROLE_KEY"
           test -n "$PUBLISHABLE_KEY"
+          test -n "$SECRET_KEY" || test -n "$SERVICE_ROLE_KEY"
 
           {
             echo "TEST_SUPABASE_URL=$API_URL"
