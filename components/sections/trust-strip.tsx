@@ -1,5 +1,5 @@
 import React from "react";
-import { ArrowUpRight, BadgeCheck, DraftingCompass, MapPinned } from "lucide-react";
+import { BadgeCheck, DraftingCompass, MapPinned } from "lucide-react";
 import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 
