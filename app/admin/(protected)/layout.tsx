@@ -6,7 +6,7 @@ import { AdminSignOutButton } from "@/components/admin/admin-sign-out";
 import { AdminNavLink } from "@/components/admin/admin-nav-link";
 import { BrandMark } from "@/components/brand/brand-mark";
 import {
-  LayoutDashboard, Building2, MessageSquare, Users, CalendarDays, ChartNoAxesCombined,
+  Users, CalendarDays, ChartNoAxesCombined,
   Clock3, Newspaper, Settings, Hammer, ShieldCheck, LockKeyhole,
 } from "lucide-react";
 
