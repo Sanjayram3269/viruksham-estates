@@ -6,13 +6,15 @@ import { Section } from "@/components/ui/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { ProjectMedia } from "@/components/projects/project-media";
 import { EnquiryForm } from "@/components/forms/enquiry-form";
-import { createClient } from "@/lib/supabase/server";\nimport { getCatalogProject } from "@/components/projects/catalog";
+import { createClient } from "@/lib/supabase/server";
+import { getCatalogProject } from "@/components/projects/catalog";
 
 interface ProjectDetailPageProps {
   params: Promise<{ slug: string }>;
 }
 
-const statusLabels: Record<string, string> = {\n  CATALOG: "Contact us for current details",
+const statusLabels: Record<string, string> = {
+  CATALOG: "Contact us for current details",
   LIVE: "Now welcoming enquiries",
   ONGOING: "In progress",
   COMPLETED: "Completed development",
@@ -30,8 +32,8 @@ export default async function ProjectDetailPage({ params }: ProjectDetailPagePro
     .eq("is_published", true)
     .single();
 
-  if (error || !data) notFound();
-  const project = data;
+  const project = data ?? getCatalogProject(slug);
+  if (!project) notFound();
   const highlights = Array.isArray(project.highlights) ? project.highlights.filter((item: unknown): item is string => typeof item === "string") : [];
   const amenities = Array.isArray(project.amenities) ? project.amenities.filter((item: unknown): item is string => typeof item === "string") : [];
   const galleryItems = [project.title + " · Architecture", project.title + " · Site context", project.title + " · Masterplan"];
