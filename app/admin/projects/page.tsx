@@ -14,6 +14,20 @@ const statusStyles: Record<string, string> = {
   SOLD_OUT: "border-[#d9d0c3] bg-[#eee8df] text-[#746b5d]",
 };
 
+type ProjectsResponse = {
+  error?: unknown;
+  projects?: unknown;
+};
+
+async function fetchProjects(): Promise<Project[]> {
+  const response = await fetch("/api/admin/projects", { credentials: "include", cache: "no-store" });
+  const body = (await response.json().catch(() => ({}))) as ProjectsResponse;
+  if (!response.ok) {
+    throw new Error(typeof body.error === "string" ? body.error : "Projects could not be loaded.");
+  }
+  return Array.isArray(body.projects) ? (body.projects as Project[]) : [];
+}
+
 export default function AdminProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,12 +37,11 @@ export default function AdminProjectsPage() {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const loadProjects = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch("/api/admin/projects", { credentials: "include", cache: "no-store" });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : "Projects could not be loaded.");
-      setProjects(Array.isArray(body.projects) ? body.projects : []);
-      setError(null);
+      const data = await fetchProjects();
+      setProjects(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Projects could not be loaded.");
     } finally {
@@ -36,7 +49,28 @@ export default function AdminProjectsPage() {
     }
   }, []);
 
-  useEffect(() => { void loadProjects(); }, [loadProjects]);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadInitialProjects() {
+      try {
+        const data = await fetchProjects();
+        if (cancelled) return;
+        setProjects(data);
+        setError(null);
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Projects could not be loaded.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void loadInitialProjects();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredProjects = projects.filter((project) => {
     const query = search.trim().toLowerCase();
