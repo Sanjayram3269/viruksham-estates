@@ -5,13 +5,13 @@ import { ButtonProps, ButtonVariant } from "@/types/ui";
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-[#14261c] text-[#faf8f5] hover:bg-[#1e3a2b] focus-visible:ring-2 focus-visible:ring-[#14261c] focus-visible:ring-offset-2",
+    "bg-[#174f35] text-white hover:bg-[#24763d] focus-visible:ring-2 focus-visible:ring-[#24763d] focus-visible:ring-offset-2",
   secondary:
-    "bg-[#f2ece4] text-[#1c1917] hover:bg-[#e7e2d9] focus-visible:ring-2 focus-visible:ring-[#1c1917] focus-visible:ring-offset-2",
+    "bg-[#edf3e5] text-[#103a28] hover:bg-[#dce7d5] focus-visible:ring-2 focus-visible:ring-[#24763d] focus-visible:ring-offset-2",
   outline:
-    "border border-[#e7e2d9] bg-transparent text-[#1c1917] hover:border-[#645d57] hover:bg-[#f2ece4]/50 focus-visible:ring-2 focus-visible:ring-[#1c1917] focus-visible:ring-offset-2",
+    "border border-[#cfe0c6] bg-transparent text-[#103a28] hover:border-[#24763d] hover:bg-[#edf3e5] focus-visible:ring-2 focus-visible:ring-[#24763d] focus-visible:ring-offset-2",
   ghost:
-    "bg-transparent text-[#1c1917] hover:bg-[#f2ece4]/60 focus-visible:ring-2 focus-visible:ring-[#1c1917] focus-visible:ring-offset-2",
+    "bg-transparent text-[#103a28] hover:bg-[#edf3e5] focus-visible:ring-2 focus-visible:ring-[#24763d] focus-visible:ring-offset-2",
   destructive:
     "bg-red-600 text-white hover:bg-red-500 focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2",
 };
