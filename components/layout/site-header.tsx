@@ -34,7 +34,7 @@ export function SiteHeader() {
           <Link href="/about" className="px-2 text-xs font-semibold tracking-wide text-[#596b5d] transition hover:text-[#24763d]">
             Our approach
           </Link>
-          <Link href="/contact" className="inline-flex items-center gap-2 rounded-full bg-[#174f35] px-5 py-3 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#24763d]">
+          <Link href="/contact" className="inline-flex items-center gap-2 rounded-full bg-[#174f35] px-5 py-3 text-sm font-extrabold text-white transition hover:-translate-y-0.5 hover:bg-[#24763d]">
             Start an enquiry <ArrowUpRight size={14} />
           </Link>
         </div>
