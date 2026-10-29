@@ -18,23 +18,10 @@ export function SectionHeading({
   ...props
 }: SectionHeadingProps) {
   return (
-    <div
-      className={cn(
-        "flex max-w-3xl flex-col space-y-3",
-        alignmentStyles[align],
-        className
-      )}
-      {...props}
-    >
+    <div className={cn("flex max-w-4xl flex-col gap-4", alignmentStyles[align], className)} {...props}>
       {eyebrow && <Eyebrow>{eyebrow}</Eyebrow>}
-      <h2 className="text-3xl font-semibold tracking-tight text-[#1c1917] sm:text-4xl">
-        {title}
-      </h2>
-      {description && (
-        <p className="text-base leading-relaxed text-[#645d57] sm:text-lg">
-          {description}
-        </p>
-      )}
+      <h2 className="display-serif text-3xl leading-[1.04] text-[#183327] sm:text-4xl lg:text-5xl">{title}</h2>
+      {description && <p className="max-w-2xl text-sm leading-7 text-[#716b61] sm:text-base">{description}</p>}
     </div>
   );
 }

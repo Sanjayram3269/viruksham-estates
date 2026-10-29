@@ -1,150 +1,59 @@
-# Viruksham Estates — Property Development Portfolio
+# Viruksham Estates
 
-[Next.js](https://nextjs.org) app router project — Viruksham Estates property development showcase.
+A refined real-estate portfolio and private administration workspace built with Next.js App Router, React, Tailwind CSS v4, and Supabase.
 
-## 🏗️ Architecture
+## Public experience
 
-- **Next.js 16** (App Router) with React 19
-- **Supabase** for database, authentication, and RLS policies
-- **TypeScript** with strict typing
-- **Tailwind CSS v4** for styling
-- Route groups: `(`site`)` for public pages, `admin` for administrative routes
+- / — editorial hero, brand story, portfolio preview, principles and contact CTA.
+- /projects — searchable published project catalogue with category/status filters.
+- /projects/[slug] — dedicated project details, highlights, amenities, media gallery placeholders and contextual enquiry form.
+- /about — company philosophy and story.
+- /journal — editorial landing for articles and insights.
+- /contact — enquiry form connected to the enquiries API.
 
-## 🌐 Public Site
+## Admin experience
 
-### Projects Catalogue
+- /admin/login — private administrator sign-in.
+- /admin/dashboard — live database counts, latest enquiries and quick actions.
+- /admin/projects — search, publication filter, edit, preview and guarded delete for projects.
+- /admin/projects/new and /admin/projects/[id]/edit — project create/update forms.
+- /admin/enquiries — protected enquiries inbox with search, status filtering and persisted status changes.
 
-- `/projects` — List all published projects, filtered by Supabase RLS
-- `/projects/[slug]` — Individual project detail page
-- Both pages work without an authenticated admin session
-- Draft/unpublished projects are not exposed to anonymous visitors
+Admin pages and API endpoints use the existing server-side administrator authorization. Enquiry status updates also attempt to append an event to the immutable activity_logs table.
 
-### Other Pages
+## Design direction
 
-- `/` — Homepage with hero and brand story
-- `/about` — About page with values and leadership
-- `/journal` — Journal/blog grid
-- `/contact` — Enquiry form
+The refreshed direction uses a warm architectural palette, forest-green / clay accents, editorial serif typography, responsive navigation, layered project cards, modest hover depth, reduced-motion support, and illustrated architectural placeholders.
 
-## 🔧 Local Development
+**Placeholder imagery is illustrative only.** Replace it with Viruksham Estates' own approved photography, plans, and renders before launch. Do not present the illustrations as completed real projects. No unverified project statistics or phone numbers are fabricated.
+
+The component patterns are original implementations inspired by contemporary editorial real-estate design and animation conventions; no extra 3D runtime was added. Existing Framer Motion and Lucide dependencies are reused.
+
+## Development
 
 ```bash
-# Install dependencies
 npm install
-
-# Run development server
 npm run dev
-# Open http://localhost:3000
-
-# Build for production
+npm run lint
 npm run build
-```
-
-### Environment Variables
-
-Create `.env.local` with:
-
-```
-NEXT_PUBLIC_SUPABASE_URL=your-supabase-project-url
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-supabase-publishable-key
-NEXT_PUBLIC_BASE_URL=http://localhost:3000
-```
-
-**Important:** The `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` must be the `sb_publishable_` key, not the secret or service role key. Secret keys are rejected by the env validation module.
-
-### RLS Security Model
-
-The Supabase RLS policies handle access control at the database level:
-
-- **Anonymous users** can only read projects where `is_published = true`
-- **Authenticated users** (admins) have full CRUD access via `public.is_admin()` function
-- **Enquiries** can be submitted anonymously with consent validation
-- **CRM entities** (customers, sales, etc.) are protected — anon access denied
-
-## 📦 Completed Features — Phase 2B
-
-### Public Project Catalogue (`/projects`)
-
-- Fetches projects from Supabase using browser client
-- RLS policy `USING (is_published = true)` filters to published only
-- Category and status filtering UI
-- Empty state when no projects published
-
-### Public Project Detail (`/projects/[slug]`)
-
-- Fetches single published project by slug
-- Returns `notFound()` for missing or unpublished projects
-- Works without admin session
-- Enquiry form integrated
-
-### Admin Projects CMS
-
-- Full CRUD at `/admin/projects`
-- Search and category/status filters with URL persistence
-- Duplicate slug validation on create and update
-- Admin authorization via `getAdminUser()` from `@/lib/auth/admin`
-- Sales history `ON DELETE RESTRICT` prevents project deletion with active sales
-- Create, edit, delete with confirmation modals
-
-### API Routes (`/api/admin/projects`)
-
-- GET/POST/PUT/DELETE with full admin auth + Supabase CRUD
-- Duplicate slug checking (create and update, excluding current project)
-- Proper error handling and validation
-
-### Type & Config Updates
-
-- `types/ui.ts`: added `"destructive"` ButtonVariant
-- `next.config.ts`: `partialPrefetching: false` for dynamic route compatibility
-- `components/ui/button.tsx`: destructive variant styling
-
-### Database
-
-- Two Anugraham Nagar records preserved:
-  - `anugraham-nagar-1`: Published (RESIDENTIAL, LIVE)
-  - `anugraham-nagar-2`: Draft (PLOTS, ONGOING)
-- RLS policies correctly configured (see `supabase/migrations/20261010000007_rls.sql`)
-
-## 🧪 Tests
-
-Run the foundation test suite:
-
-```bash
 npm run test:foundation
 ```
 
-All 105 tests pass across 9 test suites, including:
+Copy the required Supabase URL and publishable key into an ignored local .env.local. Never commit credentials or put service-role keys in client-side code.
 
-- Published vs unpublished content visibility (anon client filtering)
-- CRM confidentiality (anon cannot read customers)
-- Foreign key RESTRICT on sales → projects
-- Role self-elevation prevention
-- Audit log immutability
-- Duplicate phone/slug constraint enforcement
+## Database
 
-## 📁 Key Files
+The ordered Supabase migrations live in supabase/migrations. Apply them with the Supabase CLI using the intended linked project and review the migration plan before applying schema or permission changes. Provision administrators through the checked-in safe provisioning snippet; there is no public admin sign-up.
 
-| File | Purpose |
-|------|---------|
-| `app/(site)/projects/page.tsx` | Public project catalogue |
-| `app/(site)/projects/[slug]/page.tsx` | Public project detail |
-| `app/api/admin/projects/route.ts` | Admin API routes |
-| `app/admin/projects/page.tsx` | Admin CMS interface |
-| `lib/supabase/server.ts` | Supabase SSR client factory |
-| `supabase/migrations/20261010000007_rls.sql` | RLS policies |
-| `tests/schema-integration.test.mjs` | Integration tests |
+## Verification notes
 
-## 🚀 Deployment
+The premium refresh has been committed to branch feat/premium-estate-experience for review. A local npm run lint, npm run build, and relevant API/foundation tests still need to be run against this branch before merge. Some database integration tests require their local Supabase test environment.
 
-```bash
-npm run build
-# Deploy to production
-```
+## Production checklist
 
-Secrets and `.env.local` must remain untracked in `.gitignore` and never committed.
-
-## � remainining Work
-
-- Add integration tests for project CRUD, authorization, slug uniqueness
-- Configure production environment variables
-- Final documentation polish
+- Replace all media illustrations with approved original project assets.
+- Confirm project descriptions, prices, availability, company contact details, and office information with the business.
+- Verify project create/edit/publish and public catalogue visibility against Supabase.
+- Submit a test enquiry and confirm it appears in the admin inbox and status changes are audited.
+- Review the full RLS/security posture and configure production environment variables.
+- Upgrade Next.js and eslint-config-next to a supported patched release and regenerate package-lock.json using npm before production deployment.

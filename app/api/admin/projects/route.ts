@@ -58,8 +58,33 @@ function pickString(raw: unknown): string | undefined {
 }
 
 function pickNumber(raw: unknown): number | undefined {
-  if (typeof raw !== "number" || Number.isNaN(raw)) return undefined;
-  return raw;
+  if (typeof raw === "number" && Number.isFinite(raw)) return raw;
+  if (typeof raw === "string" && raw.trim() !== "") {
+    const value = Number(raw);
+    return Number.isFinite(value) ? value : undefined;
+  }
+  return undefined;
+}
+
+function pickBoolean(raw: unknown): boolean | undefined {
+  if (typeof raw === "boolean") return raw;
+  if (raw === "true") return true;
+  if (raw === "false") return false;
+  return undefined;
+}
+
+function pickStringArray(raw: unknown): string[] | undefined {
+  if (Array.isArray(raw)) return raw.filter((value): value is string => typeof value === "string").map((value) => value.trim()).filter(Boolean);
+  if (typeof raw === "string") {
+    return raw.split(/[,\n]/).map((value) => value.trim()).filter(Boolean);
+  }
+  return undefined;
+}
+
+function slugify(raw: string): string {
+  return raw.toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 }
 
 export async function POST(request: NextRequest) {
@@ -90,14 +115,13 @@ export async function POST(request: NextRequest) {
     }
 
     const title = body.title;
-    const slugCandidate = normalizeSlug(body.slug);
-
     if (typeof title !== "string" || title.trim().length === 0) {
       return NextResponse.json(
         { error: "title is required and must be a non-empty string." },
         { status: 400 }
       );
     }
+    const slugCandidate = normalizeSlug(body.slug) ?? (slugify(title) || `project-${Date.now()}`);
 
     if (!slugCandidate) {
       return NextResponse.json(
@@ -128,8 +152,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const is_published =
-      typeof body.is_published === "boolean" ? body.is_published : false;
+    const is_published = pickBoolean(body.is_published) ?? false;
 
     const { data, error } = await supabase
       .from("projects")
@@ -144,8 +167,8 @@ export async function POST(request: NextRequest) {
         location: pickString(body.location),
         description: pickString(body.description),
         overview: pickString(body.overview),
-        highlights: body.highlights,
-        amenities: body.amenities,
+        highlights: pickStringArray(body.highlights),
+        amenities: pickStringArray(body.amenities),
         pricing: pickString(body.pricing),
         availability: pickString(body.availability),
         coordinates: body.coordinates,
@@ -213,7 +236,7 @@ export async function DELETE(request: NextRequest) {
     const projectId = rawProjectId.trim();
     const supabase = await createClient();
 
-    const { data: salesData, error: salesError } = await supabase
+    const { count: salesCount, error: salesError } = await supabase
       .from("sales")
       .select("id", { count: "exact", head: true })
       .eq("project_id", projectId);
@@ -225,9 +248,7 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    const salesCount = salesData?.length ?? 0;
-
-    if (salesCount > 0) {
+    if ((salesCount ?? 0) > 0) {
       return NextResponse.json(
         { error: "This project has associated sales and cannot be deleted while they exist." },
         { status: 409 }
@@ -343,15 +364,12 @@ export async function PUT(request: NextRequest) {
         location: pickString(body.location),
         description: pickString(body.description),
         overview: pickString(body.overview),
-        highlights: body.highlights,
-        amenities: body.amenities,
+        highlights: pickStringArray(body.highlights),
+        amenities: pickStringArray(body.amenities),
         pricing: pickString(body.pricing),
         availability: pickString(body.availability),
         coordinates: body.coordinates,
-        is_published:
-          typeof body.is_published === "boolean"
-            ? body.is_published
-            : undefined,
+        is_published: pickBoolean(body.is_published),
         display_order: pickNumber(body.display_order),
         ...(slugCandidate ? { slug: slugCandidate } : {}),
       })

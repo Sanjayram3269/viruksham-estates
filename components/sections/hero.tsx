@@ -1,68 +1,84 @@
 import React from "react";
+import Link from "next/link";
+import { ArrowDownRight, ArrowRight, ArrowUpRight } from "lucide-react";
 import { Container } from "@/components/ui/container";
-import { Eyebrow } from "@/components/ui/eyebrow";
-import { Button } from "@/components/ui/button";
 import { MediaPlaceholder } from "@/components/ui/media-placeholder";
 import { HeroFadeIn } from "@/components/ui/hero-motion";
-import { ScrollIndicator } from "@/components/ui/scroll-indicator";
 
 export function Hero() {
   return (
-    <section className="relative flex min-h-[88vh] lg:min-h-[93vh] w-full flex-col justify-between overflow-hidden bg-[#faf8f5] pt-12 pb-10 lg:py-16">
-      {/* Visual / Media Region with Layered Gradient Overlays */}
-      <div className="absolute inset-0 z-0">
-        <MediaPlaceholder label="PROJECT MEDIA / COMING SOON" />
-        {/* Responsive Layered Gradients */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#faf8f5] via-[#faf8f5]/85 to-[#faf8f5]/40 lg:bg-gradient-to-r lg:from-[#faf8f5] lg:via-[#faf8f5]/90 lg:to-transparent lg:w-3/4" />
-      </div>
+    <section className="relative isolate overflow-hidden bg-[#fbf8f2]">
+      <div className="pointer-events-none absolute -right-32 top-16 h-[580px] w-[580px] rounded-full border border-[#183327]/[0.07]" />
+      <div className="pointer-events-none absolute -right-12 top-32 h-[430px] w-[430px] rounded-full border border-[#183327]/[0.09]" />
+      <Container className="relative z-10">
+        <div className="grid min-h-[700px] items-center gap-8 py-12 lg:min-h-[750px] lg:grid-cols-[.92fr_1.08fr] lg:gap-5 lg:py-14">
+          <div className="relative z-10 py-6 lg:py-10">
+            <HeroFadeIn delay={0.1}>
+              <div className="mb-8 flex items-center gap-3">
+                <span className="h-px w-10 bg-[#b94c3a]" />
+                <span className="editorial-kicker text-[#6b766b]">Considered living · enduring value</span>
+              </div>
+            </HeroFadeIn>
+            <HeroFadeIn delay={0.2}>
+              <h1 className="display-serif max-w-[760px] text-[clamp(3.5rem,7.4vw,7rem)] leading-[.94] text-[#182e23]">
+                A place to
+                <br />
+                <span className="italic text-[#b94c3a]">belong.</span>
+                <br />
+                A future to
+                <br />
+                <span className="relative inline-block">build<span className="absolute -bottom-1 left-0 h-[2px] w-4/5 bg-[#b94c3a]/75" />.</span>
+              </h1>
+            </HeroFadeIn>
+            <HeroFadeIn delay={0.34}>
+              <p className="mt-8 max-w-md text-[15px] leading-7 text-[#6b6a60] sm:text-base">
+                Thoughtfully considered spaces shaped around real lives, a sense of place and the promise of what comes next.
+              </p>
+            </HeroFadeIn>
+            <HeroFadeIn delay={0.46}>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link href="/projects" className="group inline-flex min-h-13 items-center justify-center gap-8 rounded-full bg-[#183327] px-6 py-4 text-sm font-semibold text-[#fbf8f2] shadow-[0_14px_30px_rgba(24,51,39,.16)] transition hover:-translate-y-1 hover:bg-[#284c3a]">
+                  Explore our projects <ArrowUpRight size={16} className="transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                </Link>
+                <Link href="/about" className="inline-flex min-h-13 items-center justify-center gap-3 rounded-full border border-[#d7d0c4] px-6 py-4 text-sm font-semibold text-[#183327] transition hover:border-[#183327] hover:bg-white/60">
+                  The Viruksham story <ArrowRight size={15} />
+                </Link>
+              </div>
+            </HeroFadeIn>
+            <HeroFadeIn delay={0.58}>
+              <div className="mt-12 flex items-center gap-5 border-t border-[#ded8ce] pt-5">
+                <div className="flex -space-x-2">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#fbf8f2] bg-[#ded2bf] text-[10px] font-semibold text-[#183327]">V</span>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#fbf8f2] bg-[#b8c3ae] text-[10px] font-semibold text-[#183327]">E</span>
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#fbf8f2] bg-[#e5c4b4] text-[10px] font-semibold text-[#183327]">+</span>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#263c2d]">Every detail has a purpose</p>
+                  <p className="mt-0.5 text-[11px] text-[#777267]">A considered approach to every space.</p>
+                </div>
+              </div>
+            </HeroFadeIn>
+          </div>
 
-      <Container className="relative z-10 flex flex-1 flex-col justify-between">
-        {/* Upper whitespace spacer */}
-        <div className="h-6 lg:h-12" />
-
-        {/* Asymmetric Left-Aligned Editorial Typography Block */}
-        <div className="max-w-2xl py-6 space-y-6 lg:space-y-8">
-          <HeroFadeIn delay={0.2}>
-            <Eyebrow>VIRUKSHAM ESTATES</Eyebrow>
-          </HeroFadeIn>
-
-          <HeroFadeIn delay={0.35}>
-            <h1 className="text-4xl font-semibold tracking-tight text-[#1c1917] sm:text-6xl lg:text-7xl xl:text-[5.25rem] leading-[1.08]">
-              Building Spaces.
-              <br />
-              <span className="text-[#1e3a2b]">Shaping Futures.</span>
-            </h1>
-          </HeroFadeIn>
-
-          <HeroFadeIn delay={0.5}>
-            <p className="max-w-xl text-base text-[#645d57] sm:text-lg lg:text-xl leading-relaxed">
-              Thoughtfully designed spaces where people, place and possibility come together.
-            </p>
-          </HeroFadeIn>
-
-          <HeroFadeIn delay={0.65}>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
-              <Button href="/projects" variant="primary" className="px-7 py-3.5 text-base">
-                Explore Projects
-              </Button>
-              <Button
-                href="/contact"
-                variant="outline"
-                className="px-7 py-3.5 text-base border-[#1c1917]/20 hover:border-[#1c1917]"
-              >
-                Start a Conversation
-              </Button>
+          <HeroFadeIn delay={0.24} className="relative mx-auto w-full max-w-[680px] lg:ml-auto">
+            <div className="relative">
+              <div className="absolute -right-3 -top-3 h-full w-full border border-[#b94c3a]/35 sm:-right-5 sm:-top-5" />
+              <div className="relative aspect-[4/4.65] overflow-hidden shadow-[0_30px_90px_rgba(24,51,39,.17)] sm:aspect-[4/4.2]">
+                <MediaPlaceholder variant="hero" label="HERO ARCHITECTURE / PHOTO TO BE ADDED" className="h-full min-h-[420px]" />
+              </div>
+              <div className="float-slow absolute -bottom-6 left-3 max-w-[270px] border border-[#e3dcd1] bg-[#fbf8f2] p-4 shadow-[0_18px_40px_rgba(24,51,39,.12)] sm:-left-8 sm:p-5">
+                <p className="editorial-kicker text-[#b94c3a]">The Viruksham outlook</p>
+                <p className="display-serif mt-2 text-xl leading-tight text-[#183327] sm:text-2xl">Designed for the life you imagine.</p>
+              </div>
+              <div className="absolute -right-2 top-8 hidden -rotate-90 origin-right text-[9px] font-semibold uppercase tracking-[.32em] text-[#183327]/55 sm:block">Spaces with meaning · Est. with intention</div>
             </div>
-          </HeroFadeIn>
-        </div>
-
-        {/* Subtle Scroll Indicator */}
-        <div className="pt-6">
-          <HeroFadeIn delay={0.8}>
-            <ScrollIndicator />
+            <a href="#discover" className="mt-12 inline-flex items-center gap-3 text-[10px] font-semibold uppercase tracking-[.22em] text-[#6e7065] transition hover:text-[#b94c3a]">
+              Discover the difference <ArrowDownRight size={16} />
+            </a>
           </HeroFadeIn>
         </div>
       </Container>
+      <div id="discover" className="h-px w-full bg-gradient-to-r from-transparent via-[#183327]/20 to-transparent" />
     </section>
   );
 }

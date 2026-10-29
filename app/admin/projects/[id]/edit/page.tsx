@@ -66,8 +66,9 @@ export default function AdminProjectEditPage() {
     setLoading(true);
     setError(null);
     try {
+      const formElement = event.currentTarget;
       const onSubmitData = Object.fromEntries(
-        new FormData(event.currentTarget).entries()
+        new FormData(formElement).entries()
       ) as Record<string, unknown>;
       const updateResponse = await fetch(
         `${window.location.origin}/api/admin/projects`,
@@ -79,9 +80,17 @@ export default function AdminProjectEditPage() {
           body: JSON.stringify({
             ...onSubmitData,
             id: projectId,
-            slug:
-              (onSubmitData.slug as string | undefined) ??
-              (project.slug as string | undefined),
+            slug: typeof onSubmitData.slug === "string" && onSubmitData.slug.trim()
+              ? onSubmitData.slug
+              : String(project.slug ?? onSubmitData.title ?? ""),
+            is_published: onSubmitData.is_published === "true",
+            display_order: Number(onSubmitData.display_order ?? 0),
+            highlights: Array.isArray(project.highlights) && onSubmitData.highlights === undefined
+              ? project.highlights
+              : String(onSubmitData.highlights ?? ""),
+            amenities: Array.isArray(project.amenities) && onSubmitData.amenities === undefined
+              ? project.amenities
+              : String(onSubmitData.amenities ?? ""),
           }),
           credentials: "include",
         }
@@ -147,7 +156,7 @@ export default function AdminProjectEditPage() {
           <Container className="max-w-2xl mx-auto space-y-8">
             <SectionHeading
               eyebrow="PROJECT CATALOGUE"
-              title="Edit Project"
+              title="Edit development"
               description="Modify the project details"
             />
 
@@ -162,7 +171,7 @@ export default function AdminProjectEditPage() {
             </div>
 
             {/* Form fields */}
-            <form onSubmit={onSubmit} className="space-y-6">
+            <form onSubmit={onSubmit} className="space-y-6 border border-[#e3dcd1] bg-[#fffdf9] p-5 shadow-[0_20px_60px_rgba(24,51,39,.06)] sm:p-8">
               {/* Basic project info */}
               <div>
                 <label className="block text-sm font-medium text-stone-700 mb-1.5">
@@ -200,6 +209,7 @@ export default function AdminProjectEditPage() {
                 </label>
                 <div className="relative">
                   <select
+                    name="category"
                     defaultValue={String(project?.category ?? "")}
                     className="block w-full rounded-md border border-stone-300 pl-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-emerald-800 focus:outline-none focus:ring-1 focus:ring-emerald-800"
                   >
@@ -219,6 +229,7 @@ export default function AdminProjectEditPage() {
                 </label>
                 <div className="relative">
                   <select
+                    name="status"
                     defaultValue={String(project?.status ?? "")}
                     className="block w-full rounded-md border border-stone-300 pl-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-emerald-800 focus:outline-none focus:ring-1 focus:ring-emerald-800"
                   >
