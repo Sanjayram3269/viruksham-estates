@@ -109,11 +109,10 @@ test("POST /api/admin/projects rejects malformed JSON bodies", async () => {
 
 test("POST /api/admin/projects requires administrator role", async () => {
   if (credentialsBlocked) return;
-  const request = makeRequest({ body: { title: "Admin Guard", slug: "admin-guard" } });
   const adminWithoutRole = createClient(SUPABASE_URL, ANON_KEY, {
     auth: { persistence: "none" },
   });
-  const { data, error } = await adminWithoutRole.auth.signInWithPassword({
+  const { data } = await adminWithoutRole.auth.signInWithPassword({
     email: process.env.TEST_ADMIN_EMAIL || "admin@example.test",
     password: process.env.TEST_ADMIN_PASSWORD || "change-me-in-real-run",
   });
