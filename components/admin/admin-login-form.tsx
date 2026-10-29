@@ -87,7 +87,7 @@ export function AdminLoginForm() {
   }
 
   return (
-    <div className="w-full max-w-md mx-auto">
+    <div className="w-full max-w-lg mx-auto">
       {/* Alert Banners for Query Errors */}
       {queryError === "unauthorized" && !error && (
         <div className="mb-6 rounded-md border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 flex items-start gap-3">
@@ -114,19 +114,19 @@ export function AdminLoginForm() {
       )}
 
       {/* Main Login Card */}
-      <div className="rounded-xl border border-stone-200 bg-white p-8 shadow-sm">
+      <div className="rounded-2xl border border-[#dce7d5] bg-white p-8 shadow-[0_24px_80px_rgba(16,58,40,.12)] sm:p-10">
         <div className="text-center mb-8">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-950/5 text-emerald-900 mb-3">
             <Shield className="h-6 w-6" />
           </div>
-          <h1 className="text-xl font-serif font-bold tracking-tight text-stone-900">
+          <h1 className="text-2xl font-serif font-bold tracking-tight text-[#103a28] sm:text-3xl">
             Viruksham Estates
           </h1>
-          <p className="text-xs uppercase tracking-widest text-emerald-800 font-semibold mt-1">
+          <p className="mt-2 text-sm font-extrabold uppercase tracking-[.2em] text-[#24763d]">
             Admin Portal
           </p>
-          <p className="text-xs text-stone-500 mt-2">
-            Enter your credentials to access the management dashboard.
+          <p className="mt-3 text-sm leading-6 text-[#596b5d]">
+            Use your authorised administrator account. Public visitors cannot access this workspace.
           </p>
         </div>
 
@@ -138,11 +138,11 @@ export function AdminLoginForm() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off" noValidate>
           <div>
             <label
               htmlFor="email"
-              className="block text-xs font-medium text-stone-700 mb-1.5"
+              className="mb-2 block text-sm font-bold text-[#294636]"
             >
               Email Address
             </label>
@@ -154,12 +154,12 @@ export function AdminLoginForm() {
                 id="email"
                 type="email"
                 required
-                autoComplete="username"
+                autoComplete="off"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@viruksham.com"
+                placeholder="Your administrator email"
                 disabled={isLoading}
-                className="block w-full rounded-md border border-stone-300 pl-9 pr-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-emerald-800 focus:outline-none focus:ring-1 focus:ring-emerald-800 disabled:bg-stone-50 disabled:text-stone-500"
+                className="block w-full rounded-xl border border-[#cfe0c6] bg-[#fbfcf7] pl-10 pr-4 py-3.5 text-base font-medium text-[#173c29] placeholder-[#829184] focus:border-[#24763d] focus:outline-none focus:ring-4 focus:ring-[#24763d]/10 disabled:bg-stone-50 disabled:text-stone-500"
               />
             </div>
           </div>
@@ -179,10 +179,10 @@ export function AdminLoginForm() {
                 id="password"
                 type="password"
                 required
-                autoComplete="current-password"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
+                placeholder="Your password"
                 disabled={isLoading}
                 className="block w-full rounded-md border border-stone-300 pl-9 pr-3 py-2 text-sm text-stone-900 placeholder-stone-400 focus:border-emerald-800 focus:outline-none focus:ring-1 focus:ring-emerald-800 disabled:bg-stone-50 disabled:text-stone-500"
               />
@@ -192,7 +192,7 @@ export function AdminLoginForm() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full mt-2 inline-flex items-center justify-center gap-2 rounded-md bg-emerald-950 px-4 py-2.5 text-xs font-semibold text-white tracking-wide transition hover:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-950/20 disabled:opacity-60"
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#174f35] px-5 py-4 text-sm font-extrabold tracking-wide text-white shadow-lg shadow-[#174f35]/15 transition hover:-translate-y-0.5 hover:bg-[#24763d] focus:outline-none focus:ring-4 focus:ring-[#24763d]/20 disabled:opacity-60"
           >
             {isLoading ? (
               <>
@@ -205,7 +205,7 @@ export function AdminLoginForm() {
           </button>
         </form>
 
-        <div className="mt-6 pt-6 border-t border-stone-100 text-center text-[11px] text-stone-400">
+        <div className="mt-6 pt-6 border-t border-stone-100 text-center text-xs font-medium text-[#596b5d]">
           <p>Protected System — Authorized Access Only</p>
           <p className="mt-0.5">Session state is server-validated and encrypted.</p>
         </div>
