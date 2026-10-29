@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowUpRight, Menu, X, ShieldCheck } from "lucide-react";
 import { BrandMark } from "@/components/brand/brand-mark";
 
 const links = [
@@ -17,37 +17,43 @@ export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="site-header sticky top-0 z-50 border-b border-[#ded8cf]/80 bg-[#fbf8f2]/90 backdrop-blur-xl">
+    <header className="site-header sticky top-0 z-50 border-b border-[#dce7d5]/90 bg-[#fbfcf7]/95 backdrop-blur-xl">
       <div className="mx-auto flex h-[78px] max-w-[1440px] items-center justify-between gap-5 px-5 sm:px-8 lg:px-12">
         <BrandMark />
         <nav aria-label="Main navigation" className="hidden items-center gap-8 lg:flex">
-          {links.map((link, index) => (
-            <Link key={link.href} href={link.href} className={`nav-link ${index === 1 ? "nav-link-featured" : ""}`}>
+          {links.map((link) => (
+            <Link key={link.href} href={link.href} className="nav-link">
               {link.label}
             </Link>
           ))}
         </nav>
-        <div className="hidden items-center gap-4 lg:flex">
-          <Link href="/about" className="text-xs font-semibold tracking-wide text-[#6d685f] transition hover:text-[#b94c3a]">
+        <div className="hidden items-center gap-3 lg:flex">
+          <Link href="/admin/login" className="inline-flex items-center gap-1.5 rounded-full border border-[#cfe0c6] px-3.5 py-2.5 text-xs font-semibold text-[#174f35] transition hover:border-[#2b8a45] hover:bg-[#eef6e8]">
+            <ShieldCheck size={14} /> Admin
+          </Link>
+          <Link href="/about" className="px-2 text-xs font-semibold tracking-wide text-[#596b5d] transition hover:text-[#24763d]">
             Our approach
           </Link>
-          <Link href="/contact" className="inline-flex items-center gap-2 rounded-full bg-[#183327] px-5 py-3 text-xs font-semibold text-[#fbf8f2] transition hover:-translate-y-0.5 hover:bg-[#284c3a]">
+          <Link href="/contact" className="inline-flex items-center gap-2 rounded-full bg-[#174f35] px-5 py-3 text-xs font-semibold text-white transition hover:-translate-y-0.5 hover:bg-[#24763d]">
             Start an enquiry <ArrowUpRight size={14} />
           </Link>
         </div>
-        <button type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#ded8cf] text-[#183327] transition hover:bg-white lg:hidden">
+        <button type="button" aria-label={menuOpen ? "Close navigation menu" : "Open navigation menu"} aria-expanded={menuOpen} onClick={() => setMenuOpen((open) => !open)} className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-[#cfe0c6] text-[#174f35] transition hover:bg-[#eef6e8] lg:hidden">
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
       {menuOpen && (
-        <div className="border-t border-[#ded8cf] bg-[#fbf8f2] px-5 pb-6 pt-3 lg:hidden">
+        <div className="border-t border-[#dce7d5] bg-[#fbfcf7] px-5 pb-6 pt-3 lg:hidden">
           <nav aria-label="Mobile navigation" className="mx-auto flex max-w-[1440px] flex-col">
-            {links.map((link, index) => (
-              <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className={`flex items-center justify-between border-b border-[#ded8cf]/70 py-4 text-sm ${index === 1 ? "font-semibold text-[#b94c3a]" : "text-[#183327]"}`}>
+            {links.map((link) => (
+              <Link key={link.href} href={link.href} onClick={() => setMenuOpen(false)} className="flex items-center justify-between border-b border-[#dce7d5]/90 py-4 text-sm text-[#174f35]">
                 {link.label}<ArrowUpRight size={15} />
               </Link>
             ))}
-            <Link href="/contact" onClick={() => setMenuOpen(false)} className="mt-5 inline-flex items-center justify-center gap-2 rounded-full bg-[#183327] px-5 py-3.5 text-sm font-semibold text-white">
+            <Link href="/admin/login" onClick={() => setMenuOpen(false)} className="mt-5 inline-flex items-center justify-center gap-2 rounded-full border border-[#cfe0c6] px-5 py-3.5 text-sm font-semibold text-[#174f35]">
+              <ShieldCheck size={15} /> Admin portal <ArrowUpRight size={15} />
+            </Link>
+            <Link href="/contact" onClick={() => setMenuOpen(false)} className="mt-3 inline-flex items-center justify-center gap-2 rounded-full bg-[#174f35] px-5 py-3.5 text-sm font-semibold text-white">
               Start an enquiry <ArrowUpRight size={15} />
             </Link>
           </nav>
