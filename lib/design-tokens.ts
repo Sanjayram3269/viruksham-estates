@@ -1,12 +1,12 @@
 export const colors = {
-  forestGreen: "#1e3a2b",
-  deepForest: "#14261c",
-  leafGreen: "#2e523c",
-  warmIvory: "#faf8f5",
-  warmSand: "#f2ece4",
+  forestGreen: "#174f35",
+  deepForest: "#103a28",
+  leafGreen: "#2b8a45",
+  warmIvory: "#f8f9f2",
+  warmSand: "#edf3e5",
   charcoal: "#1c1917",
-  mutedStone: "#645d57",
-  softBorder: "#e7e2d9",
+  mutedStone: "#596b5d",
+  softBorder: "#dce7d5",
 } as const;
 
 export const spacing = {
