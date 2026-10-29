@@ -5,7 +5,6 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Eyebrow } from "@/components/ui/eyebrow";
 import { EnquiryForm } from "@/components/forms/enquiry-form";
-import { MediaPlaceholder } from "@/components/ui/media-placeholder";
 
 const officeAddress = "10, Gandhi St, State Bank Of India Colony, Chitlapakkam, Tambaram, Tamil Nadu 600064";
 const mapUrl = "https://www.google.com/maps/search/?api=1&query=10%2C%20Gandhi%20St%2C%20State%20Bank%20Of%20India%20Colony%2C%20Chitlapakkam%2C%20Tambaram%2C%20Tamil%20Nadu%20600064";
@@ -16,7 +15,7 @@ export function ContactSection() {
       <section className="relative overflow-hidden border-b border-[#dce7d5] bg-[#edf3e5]">
         <Container className="relative grid gap-10 py-14 sm:py-18 lg:grid-cols-[.85fr_1.15fr] lg:items-end lg:py-20">
           <div><Eyebrow>Get in touch</Eyebrow><h1 className="display-serif mt-5 max-w-2xl text-4xl leading-[1.03] text-[#143e2a] sm:text-5xl lg:text-6xl">The first step is a <span className="italic text-[#2b8a45]">conversation.</span></h1><p className="mt-6 max-w-lg text-sm leading-7 text-[#596b5d] sm:text-base">Tell us what you are looking for. Whether it is a future home, a site visit or a conversation about our work, we will help you find the right next step.</p></div>
-          <div className="relative mx-auto h-[230px] w-full max-w-xl overflow-hidden lg:ml-auto"><MediaPlaceholder variant="detail" label="MEET THE VIRUKSHAM TEAM / PHOTO TO BE ADDED" className="h-full" /></div>
+          <div className="relative mx-auto h-[230px] w-full max-w-xl overflow-hidden lg:ml-auto"><img src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1200&q=85" alt="Contemporary residential architecture and landscaped outdoor space" className="h-full w-full object-cover" loading="lazy" /></div>
         </Container>
       </section>
       <Section className="bg-[#f8f9f2]">
