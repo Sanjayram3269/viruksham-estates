@@ -34,6 +34,20 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
+type EnquiriesResponse = {
+  error?: unknown;
+  enquiries?: unknown;
+};
+
+async function fetchEnquiries(): Promise<Enquiry[]> {
+  const response = await fetch("/api/admin/enquiries", { credentials: "include", cache: "no-store" });
+  const body = (await response.json().catch(() => ({}))) as EnquiriesResponse;
+  if (!response.ok) {
+    throw new Error(typeof body.error === "string" ? body.error : "Enquiries could not be loaded.");
+  }
+  return Array.isArray(body.enquiries) ? (body.enquiries as Enquiry[]) : [];
+}
+
 export default function AdminEnquiriesPage() {
   const [enquiries, setEnquiries] = useState<Enquiry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,12 +57,11 @@ export default function AdminEnquiriesPage() {
   const [savingId, setSavingId] = useState<string | null>(null);
 
   const loadEnquiries = useCallback(async () => {
+    setLoading(true);
+    setError(null);
     try {
-      const response = await fetch("/api/admin/enquiries", { credentials: "include", cache: "no-store" });
-      const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : "Enquiries could not be loaded.");
-      setEnquiries(Array.isArray(body.enquiries) ? body.enquiries : []);
-      setError(null);
+      const data = await fetchEnquiries();
+      setEnquiries(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Enquiries could not be loaded.");
     } finally {
@@ -56,7 +69,28 @@ export default function AdminEnquiriesPage() {
     }
   }, []);
 
-  useEffect(() => { void loadEnquiries(); }, [loadEnquiries]);
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadInitialEnquiries() {
+      try {
+        const data = await fetchEnquiries();
+        if (cancelled) return;
+        setEnquiries(data);
+        setError(null);
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : "Enquiries could not be loaded.");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    void loadInitialEnquiries();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filtered = useMemo(() => enquiries.filter((item) => {
     const q = query.trim().toLowerCase();
