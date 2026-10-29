@@ -25,7 +25,7 @@ export default function FounderJourneyPage() {
         <div className="absolute inset-0 bg-gradient-to-r from-[#10271d] via-[#10271d]/90 to-[#10271d]/45" />
         <Container className="relative py-16 sm:py-24 lg:py-32">
           <Link href="/journal" className="mb-12 inline-flex items-center gap-2 text-sm font-bold text-white/80 transition hover:text-[#d7f29b]"><ArrowLeft size={16} /> Back to Journal</Link>
-          <p className="editorial-kicker text-[#d7f29b]">Founder story · a timeline</p>
+          <p className="editorial-kicker text-[#d7f29b]">R. Sathish Kumar · Proprietor, Viruksham Estates</p><p className="editorial-kicker mt-3 text-white/65">Founder story · a timeline</p>
           <h1 className="display-serif mt-5 max-w-4xl text-5xl leading-[.98] sm:text-6xl lg:text-8xl">A journey shaped by <span className="italic text-[#d7f29b]">many chapters.</span></h1>
           <p className="mt-7 max-w-2xl text-base leading-8 text-white/85 sm:text-lg">From an early professional chapter to real estate, construction, legal work and further areas of interest, this visual story follows the milestones listed in the roadmap shared with us.</p>
           <div className="mt-10 flex flex-wrap gap-3 text-xs font-extrabold uppercase tracking-[.15em] text-white/85"><span className="rounded-full border border-white/25 px-4 py-2">1994 — 2022</span><span className="rounded-full border border-white/25 px-4 py-2">Founder’s timeline</span><span className="rounded-full border border-white/25 px-4 py-2">Viruksham Estates</span></div>
