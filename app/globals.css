@@ -98,3 +98,12 @@ main p.text-sm { font-size: 15px; line-height: 1.75; }
 .editorial-kicker, .eyebrow-footer { font-size: 11px; font-weight: 800; letter-spacing: .18em; }
 button, [role="button"] { font-weight: 700; }
 .site-header a { font-weight: 700; }
+
+
+/* Premium readability layer */
+body { font-size: 16px; line-height: 1.65; }
+main p { text-wrap: pretty; }
+main p.text-sm { font-size: 15px; line-height: 1.75; }
+.editorial-kicker, .eyebrow-footer { font-size: 11px; font-weight: 800; letter-spacing: .18em; }
+button, [role="button"] { font-weight: 700; }
+.site-header a { font-weight: 700; }
