@@ -7,7 +7,7 @@ import { timeline } from "@/lib/content";
 
 export function CompanyJourney() {
   return (
-    <Section className="bg-[#faf8f5]">
+    <Section className="bg-[#f8f9f2]">
       <Container className="space-y-12">
         <SectionHeading
           eyebrow="MILESTONES"
@@ -26,7 +26,7 @@ export function CompanyJourney() {
               <div key={item.id} className="border-l-2 border-[#1e3a2b] pl-6 space-y-1">
                 <span className="text-xs font-semibold text-[#2e523c]">{item.year}</span>
                 <h3 className="text-lg font-semibold text-[#1c1917]">{item.title}</h3>
-                <p className="text-sm text-[#645d57]">{item.description}</p>
+                <p className="text-sm text-[#596b5d]">{item.description}</p>
               </div>
             ))}
           </div>
