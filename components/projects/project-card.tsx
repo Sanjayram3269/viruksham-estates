@@ -62,8 +62,8 @@ export function ProjectCard({ project, className, index = 0, featured = false }:
             <p className="editorial-kicker text-[#928879]">Availability</p>
             <p className="mt-1 text-sm font-semibold text-[#174f35]">{project.availability || (project.status === "UPCOMING" ? "Enquire for updates" : "Enquire for details")}</p>
           </div>
-          <Link href={`/projects/${project.slug}`} className="inline-flex items-center gap-2 text-xs font-bold text-[#2b8a45] transition hover:gap-3">
-            Discover project <ArrowUpRight size={14} />
+          <Link href={`/projects/${project.slug}#enquire`} className="inline-flex items-center gap-2 rounded-full bg-[#174f35] px-4 py-2.5 text-xs font-bold text-white transition hover:bg-[#24763d]">
+            Enquire about this project <ArrowUpRight size={14} />
           </Link>
         </div>
       </div>
