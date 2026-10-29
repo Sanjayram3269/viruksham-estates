@@ -31,5 +31,6 @@ export interface Project {
   walkthrough?: string;
   pricing?: string;
   availability?: string;
-  coordinates?: ProjectCoordinates;\n  catalogOnly?: boolean;
+  coordinates?: ProjectCoordinates;
+  catalogOnly?: boolean;
 }
